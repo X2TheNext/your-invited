@@ -1,0 +1,1004 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ATCHÉ — Venue CRM</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@300;400;500;600&display=swap');
+
+:root {
+  --black: #080808;
+  --surface: #111111;
+  --surface2: #181818;
+  --surface3: #242424;
+  --border: #222222;
+  --border2: #2e2e2e;
+  --gold: #C9A84C;
+  --gold-light: #E2C47A;
+  --gold-dim: rgba(201,168,76,0.12);
+  --gold-glow: rgba(201,168,76,0.06);
+  --rose: #C2697A;
+  --rose-light: #E8A0AE;
+  --rose-dim: rgba(194,105,122,0.15);
+  --sage: #6B9E7A;
+  --sage-light: #9DC9A8;
+  --sage-dim: rgba(107,158,122,0.15);
+  --violet: #8B6BB1;
+  --violet-light: #B99FD4;
+  --sky: #5B8DB8;
+  --sky-light: #90B8D8;
+  --amber: #D4843A;
+  --amber-light: #F0A85A;
+  --amber-dim: rgba(212,132,58,0.15);
+  --text: #F2EDE6;
+  --text2: #B0A898;
+  --text3: #6A6258;
+  --radius: 10px;
+  --radius-sm: 6px;
+  --radius-lg: 18px;
+  --t: 0.18s cubic-bezier(0.4,0,0.2,1);
+}
+
+*{box-sizing:border-box;margin:0;padding:0}
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
+
+body{font-family:'Inter',sans-serif;background:var(--black);color:var(--text);min-height:100vh;overflow-x:hidden}
+
+.app{display:flex;height:100vh;overflow:hidden}
+.sidebar{width:220px;min-width:220px;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;z-index:10}
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+
+.sidebar-logo{padding:22px 18px 18px;border-bottom:1px solid var(--border)}
+.sidebar-logo h1{font-family:'Playfair Display',serif;font-size:20px;font-weight:700;color:var(--gold);letter-spacing:5px}
+.sidebar-logo p{font-size:10px;color:var(--text3);letter-spacing:2px;margin-top:3px;text-transform:uppercase}
+
+.sidebar-nav{flex:1;padding:12px 0;overflow-y:auto}
+.nav-item{display:flex;align-items:center;gap:10px;padding:10px 18px;cursor:pointer;color:var(--text2);font-size:13px;font-weight:500;letter-spacing:0.3px;transition:var(--t);border-left:2px solid transparent}
+.nav-item:hover{color:var(--text);background:var(--gold-glow)}
+.nav-item.active{color:var(--gold);background:var(--gold-dim);border-left-color:var(--gold)}
+.nav-item .icon{font-size:15px;width:18px;text-align:center;flex-shrink:0}
+.nav-badge{margin-left:auto;background:var(--gold);color:var(--black);font-size:10px;font-weight:700;padding:1px 6px;border-radius:10px}
+.sidebar-section{padding:8px 18px 4px;font-size:9px;font-weight:600;color:var(--text3);letter-spacing:2px;text-transform:uppercase;margin-top:8px}
+.sidebar-bottom{padding:14px 18px;border-top:1px solid var(--border)}
+.add-btn{width:100%;padding:9px;background:var(--gold);color:var(--black);border:none;border-radius:var(--radius-sm);font-size:12px;font-weight:700;letter-spacing:1px;cursor:pointer;transition:var(--t);text-transform:uppercase}
+.add-btn:hover{background:var(--gold-light)}
+.icon-btn{padding:7px 10px;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--radius-sm);cursor:pointer;color:var(--text2);font-size:13px;transition:var(--t)}
+.icon-btn:hover{color:var(--gold);border-color:var(--gold)}
+
+.topbar{display:flex;align-items:center;gap:12px;padding:14px 24px;border-bottom:1px solid var(--border);background:var(--surface);flex-shrink:0}
+.topbar-title{font-family:'Playfair Display',serif;font-size:18px;font-weight:600;color:var(--text)}
+.topbar-sub{font-size:11px;color:var(--text3);letter-spacing:0.5px;margin-top:1px}
+.topbar-right{margin-left:auto;display:flex;align-items:center;gap:8px}
+.search-box{display:flex;align-items:center;gap:8px;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--radius-sm);padding:7px 12px;min-width:220px}
+.search-box input{background:transparent;border:none;color:var(--text);font-size:13px;outline:none;flex:1}
+.search-box input::placeholder{color:var(--text3)}
+
+.content{flex:1;overflow-y:auto;overflow-x:hidden}
+.view{display:none;padding:24px;min-height:0}
+.view.active{display:block}
+
+.filter-bar{display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap;align-items:center}
+.filter-chip{padding:5px 12px;background:var(--surface);border:1px solid var(--border2);border-radius:20px;font-size:11px;font-weight:500;color:var(--text2);cursor:pointer;transition:var(--t)}
+.filter-chip:hover,.filter-chip.active{background:var(--gold-dim);border-color:var(--gold);color:var(--gold)}
+.filter-label{font-size:11px;color:var(--text3);letter-spacing:0.5px}
+
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px}
+.venue-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;cursor:pointer;transition:var(--t);position:relative}
+.venue-card:hover{border-color:var(--gold);transform:translateY(-2px);box-shadow:0 8px 32px rgba(0,0,0,0.4)}
+.card-header{height:120px;position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.card-header-bg{position:absolute;inset:0;background:linear-gradient(135deg,var(--surface2),var(--surface3))}
+.card-rank-badge{position:absolute;top:10px;left:10px;background:var(--black);border:1px solid var(--gold);color:var(--gold);padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;z-index:1}
+.card-status-badge{position:absolute;top:10px;right:10px;padding:3px 9px;border-radius:20px;font-size:10px;font-weight:600;letter-spacing:0.5px;z-index:1}
+.card-score-circle{width:72px;height:72px;border-radius:50%;border:2px solid var(--gold);display:flex;flex-direction:column;align-items:center;justify-content:center;background:var(--black);position:relative;z-index:1}
+.score-num{font-family:'Playfair Display',serif;font-size:22px;font-weight:700;color:var(--gold);line-height:1}
+.score-lbl{font-size:8px;color:var(--text3);letter-spacing:1px;text-transform:uppercase}
+.card-body{padding:14px}
+.card-name{font-family:'Playfair Display',serif;font-size:16px;font-weight:600;color:var(--text);margin-bottom:2px}
+.card-location{font-size:11px;color:var(--text3);margin-bottom:8px}
+.card-tags{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:10px}
+.tag{padding:2px 8px;border-radius:20px;font-size:10px;font-weight:500;letter-spacing:0.3px}
+.card-metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px}
+.metric{text-align:center;background:var(--surface2);border-radius:var(--radius-sm);padding:7px 4px}
+.metric-val{font-size:13px;font-weight:600;color:var(--gold)}
+.metric-lbl{font-size:9px;color:var(--text3);letter-spacing:0.5px;text-transform:uppercase;margin-top:1px}
+.card-contact{font-size:11px;color:var(--text2);padding-top:8px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.card-contact-name{font-weight:500;color:var(--text)}
+.card-next{font-size:10px;color:var(--gold)}
+
+.kanban{display:flex;gap:14px;overflow-x:auto;padding:4px 0 16px;min-height:calc(100vh - 160px)}
+.kanban-col{min-width:230px;max-width:230px;display:flex;flex-direction:column;gap:10px}
+.kanban-col-header{padding:10px 14px;border-radius:var(--radius);font-size:12px;font-weight:700;letter-spacing:0.5px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.kanban-col-count{font-size:11px;opacity:0.7;font-weight:500}
+.kanban-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:12px;cursor:pointer;transition:var(--t)}
+.kanban-card:hover{border-color:var(--gold);box-shadow:0 4px 16px rgba(0,0,0,0.3)}
+.kc-name{font-size:13px;font-weight:600;margin-bottom:3px;color:var(--text)}
+.kc-sub{font-size:11px;color:var(--text3);margin-bottom:8px}
+.kc-tags{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px}
+.kc-note{font-size:11px;color:var(--text2);line-height:1.4;font-style:italic;margin-bottom:8px}
+.kc-bottom{display:flex;align-items:center;justify-content:space-between;padding-top:8px;border-top:1px solid var(--border)}
+.kc-score{font-family:'Playfair Display',serif;font-size:16px;font-weight:700;color:var(--gold)}
+.kc-date{font-size:10px;color:var(--text3)}
+
+.rank-list{display:flex;flex-direction:column;gap:8px}
+.rank-item{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px 18px;display:flex;align-items:center;gap:16px;cursor:pointer;transition:var(--t)}
+.rank-item:hover{border-color:var(--gold);transform:translateX(3px)}
+.rank-num{font-family:'Playfair Display',serif;font-size:26px;font-weight:700;color:var(--text3);min-width:38px;text-align:center}
+.rank-num.top1{color:var(--gold)}.rank-num.top2{color:var(--text2)}.rank-num.top3{color:var(--amber)}
+.rank-icon{width:48px;height:48px;border-radius:var(--radius-sm);background:var(--gold-dim);border:1px solid var(--gold);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.rank-info{flex:1}
+.rank-name{font-size:14px;font-weight:600;color:var(--text);margin-bottom:2px}
+.rank-sub{font-size:11px;color:var(--text3)}
+.rank-bar-wrap{flex:1;max-width:180px;height:5px;background:var(--border2);border-radius:3px}
+.rank-bar{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--gold),var(--gold-light))}
+.rank-score{text-align:right;min-width:60px}
+.rank-score-val{font-family:'Playfair Display',serif;font-size:24px;font-weight:700;color:var(--gold)}
+.rank-score-lbl{font-size:10px;color:var(--text3);letter-spacing:0.5px;text-transform:uppercase}
+.rank-detail-row{display:flex;gap:8px;margin-top:6px;flex-wrap:wrap}
+.rank-chip{padding:2px 7px;border-radius:20px;font-size:9px;font-weight:600;background:var(--gold-dim);color:var(--gold);border:1px solid rgba(201,168,76,0.2)}
+
+.table-wrap{overflow-x:auto;border:1px solid var(--border);border-radius:var(--radius-lg)}
+table{width:100%;border-collapse:collapse;font-size:13px}
+thead{background:var(--surface2);position:sticky;top:0;z-index:2}
+th{padding:11px 14px;text-align:left;font-size:10px;font-weight:600;color:var(--text3);letter-spacing:1.5px;text-transform:uppercase;border-bottom:1px solid var(--border);white-space:nowrap;cursor:pointer;user-select:none}
+th:hover{color:var(--gold)}
+td{padding:11px 14px;border-bottom:1px solid var(--border);color:var(--text2);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:var(--gold-glow);color:var(--text)}
+.td-name{font-weight:600;color:var(--text)}
+.td-score{font-family:'Playfair Display',serif;font-size:16px;font-weight:700;color:var(--gold)}
+
+.stats-row{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:24px}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:18px;position:relative;overflow:hidden}
+.stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
+.stat-card.gold::before{background:var(--gold)}.stat-card.sage::before{background:var(--sage)}
+.stat-card.rose::before{background:var(--rose)}.stat-card.violet::before{background:var(--violet)}
+.stat-card.amber::before{background:var(--amber)}
+.stat-card-val{font-family:'Playfair Display',serif;font-size:34px;font-weight:700;color:var(--text);margin-bottom:4px}
+.stat-card-lbl{font-size:11px;color:var(--text3);letter-spacing:0.5px;text-transform:uppercase;font-weight:500}
+.stat-card-sub{font-size:12px;color:var(--text2);margin-top:4px}
+.section-title{font-family:'Playfair Display',serif;font-size:17px;font-weight:600;color:var(--text);margin-bottom:14px}
+.section-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.see-all{font-size:11px;color:var(--gold);cursor:pointer;letter-spacing:0.5px}
+.see-all:hover{text-decoration:underline}
+.dash-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.dash-block{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:20px}
+.recent-list{display:flex;flex-direction:column;gap:8px}
+.recent-item{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:11px 14px;display:flex;align-items:center;gap:12px;cursor:pointer;transition:var(--t)}
+.recent-item:hover{border-color:var(--gold)}
+.ri-icon{width:36px;height:36px;border-radius:var(--radius-sm);background:var(--gold-dim);border:1px solid rgba(201,168,76,0.25);display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+.ri-info{flex:1}.ri-name{font-size:13px;font-weight:600;color:var(--text);margin-bottom:1px}.ri-meta{font-size:11px;color:var(--text3)}
+.ri-right{text-align:right}.ri-score{font-family:'Playfair Display',serif;font-size:16px;font-weight:700;color:var(--gold)}
+.ri-status-dot{font-size:10px;padding:2px 7px;border-radius:10px;margin-top:3px;display:inline-block}
+.pipeline-viz{display:flex;flex-direction:column;gap:8px;margin-top:4px}
+.pipeline-row{display:flex;align-items:center;gap:10px}
+.pipeline-label{font-size:11px;color:var(--text2);width:110px;flex-shrink:0}
+.pipeline-bar-wrap{flex:1;height:8px;background:var(--border2);border-radius:4px}
+.pipeline-bar-fill{height:100%;border-radius:4px;transition:var(--t)}
+.pipeline-count{font-size:11px;font-weight:600;color:var(--text3);min-width:20px;text-align:right}
+
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.88);backdrop-filter:blur(4px);z-index:100;display:none;align-items:flex-start;justify-content:center;padding:24px;overflow-y:auto}
+.modal-overlay.open{display:flex}
+.modal{background:var(--surface);border:1px solid var(--border2);border-radius:var(--radius-lg);width:100%;max-width:820px;overflow:hidden;position:relative;margin:auto}
+.modal-hero{height:160px;background:linear-gradient(135deg,var(--surface2),var(--surface3));position:relative;display:flex;align-items:flex-end;padding:20px;gap:16px}
+.modal-icon{width:80px;height:80px;border-radius:var(--radius);background:var(--black);border:2px solid var(--gold);display:flex;align-items:center;justify-content:center;font-size:28px;flex-shrink:0}
+.modal-hero-info{flex:1}
+.modal-hero-name{font-family:'Playfair Display',serif;font-size:26px;font-weight:700;color:var(--text);line-height:1}
+.modal-hero-sub{font-size:12px;color:var(--text3);margin-top:4px}
+.modal-hero-score{font-family:'Playfair Display',serif;font-size:38px;font-weight:700;color:var(--gold);line-height:1;text-align:right}
+.modal-hero-score-lbl{font-size:9px;color:var(--text3);letter-spacing:1px;text-transform:uppercase;text-align:right}
+.modal-close{position:absolute;top:14px;right:14px;background:rgba(0,0,0,0.5);border:1px solid var(--border2);border-radius:50%;width:30px;height:30px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text2);font-size:16px;transition:var(--t)}
+.modal-close:hover{border-color:var(--gold);color:var(--gold)}
+.modal-tabs{display:flex;border-bottom:1px solid var(--border);padding:0 20px;background:var(--surface);overflow-x:auto}
+.modal-tab{padding:12px 16px;font-size:12px;font-weight:500;color:var(--text3);cursor:pointer;border-bottom:2px solid transparent;transition:var(--t);letter-spacing:0.3px;white-space:nowrap}
+.modal-tab.active{color:var(--gold);border-bottom-color:var(--gold)}
+.modal-tab:hover:not(.active){color:var(--text2)}
+.modal-body{padding:22px}
+.modal-tab-content{display:none}.modal-tab-content.active{display:block}
+.info-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.info-block{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:14px}
+.info-block.full{grid-column:1/-1}
+.info-label{font-size:10px;font-weight:600;color:var(--text3);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:6px}
+.info-value{font-size:13px;color:var(--text);line-height:1.5}
+.info-value a{color:var(--gold);text-decoration:none}.info-value a:hover{text-decoration:underline}
+
+.criteria-grid{display:flex;flex-direction:column;gap:10px}
+.criteria-row{display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid var(--border)}
+.criteria-row:last-child{border-bottom:none}
+.criteria-label{font-size:12px;color:var(--text2);width:160px;flex-shrink:0}
+.criteria-weight{font-size:10px;color:var(--text3);width:40px;flex-shrink:0}
+.criteria-bar-wrap{flex:1;height:6px;background:var(--border2);border-radius:3px}
+.criteria-bar-fill{height:100%;border-radius:3px;transition:var(--t)}
+.criteria-val{font-size:12px;font-weight:600;color:var(--gold);min-width:30px;text-align:right}
+.total-score-row{display:flex;align-items:center;justify-content:space-between;padding:14px;background:var(--gold-dim);border:1px solid var(--gold);border-radius:var(--radius);margin-top:12px}
+.total-score-num{font-family:'Playfair Display',serif;font-size:32px;font-weight:700;color:var(--gold)}
+
+.event-log{display:flex;flex-direction:column;gap:10px}
+.event-entry{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:14px}
+.event-entry-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.event-entry-name{font-size:13px;font-weight:600;color:var(--text)}
+.event-entry-date{font-size:11px;color:var(--text3)}
+.event-entry-stats{display:flex;gap:20px}
+.event-stat{text-align:center}.event-stat-val{font-size:16px;font-weight:600;color:var(--gold)}
+.event-stat-lbl{font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px}
+
+.note-list{display:flex;flex-direction:column;gap:8px}
+.note-entry{background:var(--surface2);border-left:3px solid var(--gold);border-radius:0 var(--radius-sm) var(--radius-sm) 0;padding:10px 12px;position:relative}
+.note-entry-text{font-size:13px;color:var(--text2);line-height:1.5}
+.note-entry-date{font-size:10px;color:var(--text3);margin-top:4px}
+.note-del{position:absolute;top:8px;right:8px;background:none;border:none;color:var(--text3);cursor:pointer;font-size:14px;transition:var(--t);opacity:0}
+.note-entry:hover .note-del{opacity:1}
+.note-del:hover{color:var(--rose)}
+.add-note-row{display:flex;gap:8px;margin-top:10px}
+.add-note-input{flex:1;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--radius-sm);padding:8px 12px;color:var(--text);font-size:12px;outline:none;font-family:'Inter',sans-serif;resize:none}
+.add-note-input:focus{border-color:var(--gold)}
+.add-note-btn{padding:8px 14px;background:var(--gold-dim);border:1px solid var(--gold);border-radius:var(--radius-sm);color:var(--gold);font-size:12px;font-weight:600;cursor:pointer;transition:var(--t)}
+.add-note-btn:hover{background:var(--gold);color:var(--black)}
+
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+.form-group{display:flex;flex-direction:column;gap:5px}
+.form-group.full{grid-column:1/-1}
+.form-label{font-size:11px;font-weight:600;color:var(--text3);letter-spacing:1px;text-transform:uppercase}
+.form-input{background:var(--surface2);border:1px solid var(--border2);border-radius:var(--radius-sm);padding:9px 12px;color:var(--text);font-size:13px;outline:none;transition:var(--t);width:100%}
+.form-input:focus{border-color:var(--gold)}
+.form-select{background:var(--surface2);border:1px solid var(--border2);border-radius:var(--radius-sm);padding:9px 12px;color:var(--text);font-size:13px;outline:none;width:100%;cursor:pointer}
+.form-textarea{background:var(--surface2);border:1px solid var(--border2);border-radius:var(--radius-sm);padding:9px 12px;color:var(--text);font-size:13px;outline:none;resize:vertical;min-height:80px;width:100%;font-family:'Inter',sans-serif}
+.form-textarea:focus{border-color:var(--gold)}
+.form-section{font-size:12px;font-weight:700;color:var(--gold);letter-spacing:1px;text-transform:uppercase;margin:16px 0 10px;padding-bottom:6px;border-bottom:1px solid var(--gold-dim)}
+.form-btns{display:flex;gap:10px;justify-content:flex-end;margin-top:20px;padding-top:16px;border-top:1px solid var(--border)}
+.btn-cancel{padding:9px 20px;background:transparent;border:1px solid var(--border2);border-radius:var(--radius-sm);color:var(--text2);font-size:13px;cursor:pointer;transition:var(--t)}
+.btn-cancel:hover{border-color:var(--text2)}
+.btn-save{padding:9px 24px;background:var(--gold);color:var(--black);border:none;border-radius:var(--radius-sm);font-size:13px;font-weight:700;cursor:pointer;transition:var(--t)}
+.btn-save:hover{background:var(--gold-light)}
+
+.badge{padding:2px 8px;border-radius:20px;font-size:10px;font-weight:600;letter-spacing:0.5px;display:inline-block}
+.empty-state{text-align:center;padding:60px 20px;color:var(--text3)}
+.empty-state .empty-icon{font-size:48px;margin-bottom:12px;opacity:0.4}
+
+.sync-dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--sage);margin-right:4px;vertical-align:middle}
+.sync-dot.saving{background:var(--gold)}.sync-dot.error{background:var(--rose)}
+
+/* status */
+.status-active{background:var(--sage-dim);border:1px solid var(--sage);color:var(--sage-light)}
+.status-talks{background:var(--gold-dim);border:1px solid var(--gold);color:var(--gold)}
+.status-warm{background:var(--amber-dim);border:1px solid var(--amber);color:var(--amber-light)}
+.status-prospect{background:rgba(91,141,184,0.12);border:1px solid var(--sky);color:var(--sky-light)}
+.status-passed{background:rgba(106,98,88,0.15);border:1px solid var(--text3);color:var(--text3)}
+
+/* tags */
+.tag-hookah{background:rgba(201,168,76,0.1);color:var(--gold-light)}
+.tag-rooftop{background:rgba(91,141,184,0.1);color:var(--sky-light)}
+.tag-fullbar{background:rgba(107,158,122,0.1);color:var(--sage-light)}
+.tag-private{background:rgba(139,107,177,0.1);color:var(--violet-light)}
+.tag-outdoor{background:rgba(107,158,122,0.1);color:var(--sage-light)}
+.tag-av{background:rgba(212,132,58,0.1);color:var(--amber-light)}
+.tag-lounge{background:rgba(194,105,122,0.1);color:var(--rose-light)}
+.tag-blackowned{background:rgba(201,168,76,0.15);color:var(--gold);border:1px solid rgba(201,168,76,0.3)}
+.tag-hbcu{background:rgba(139,107,177,0.12);color:var(--violet-light)}
+.tag-livemusic{background:rgba(194,105,122,0.1);color:var(--rose-light)}
+.tag-patio{background:rgba(107,158,122,0.1);color:var(--sage-light)}
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <h1>ATCHÉ</h1>
+    <p>Venue CRM</p>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="sidebar-section">Overview</div>
+    <div class="nav-item active" onclick="showView('dashboard',this)">
+      <span class="icon">◈</span> Dashboard
+    </div>
+    <div class="sidebar-section">Venues</div>
+    <div class="nav-item" onclick="showView('directory',this)">
+      <span class="icon">⊞</span> Directory
+      <span class="nav-badge" id="badge-total">0</span>
+    </div>
+    <div class="nav-item" onclick="showView('rankings',this)">
+      <span class="icon">◎</span> Rankings
+    </div>
+    <div class="nav-item" onclick="showView('pipeline',this)">
+      <span class="icon">⬦</span> Pipeline
+    </div>
+    <div class="nav-item" onclick="showView('table',this)">
+      <span class="icon">≡</span> Table View
+    </div>
+  </nav>
+  <div class="sidebar-bottom">
+    <button class="add-btn" onclick="openAddModal()">+ Add Venue</button>
+    <div style="display:flex;gap:6px;margin-top:8px">
+      <button class="icon-btn" style="flex:1;font-size:11px;padding:7px 0;letter-spacing:0.5px" onclick="exportCSV()" title="Export CSV">↓ Export</button>
+    </div>
+    <div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border)">
+      <div id="syncStatus" style="font-size:10px;color:var(--text3);text-align:center;margin-bottom:6px;letter-spacing:0.5px"><span class="sync-dot"></span>Synced</div>
+      <div style="display:flex;gap:6px">
+        <button class="icon-btn" style="flex:1;font-size:11px;padding:7px 0;color:var(--text3)" onclick="goHub()">← Hub</button>
+        <button class="icon-btn" style="flex:1;font-size:11px;padding:7px 0;color:var(--text3)" onclick="doLogout()">Sign Out</button>
+      </div>
+    </div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<div class="main">
+  <div class="topbar">
+    <div>
+      <div class="topbar-title" id="topbar-title">Dashboard</div>
+      <div class="topbar-sub" id="topbar-sub">ATCHÉ Venue Intelligence</div>
+    </div>
+    <div class="topbar-right">
+      <div class="search-box">
+        <span>⌕</span>
+        <input type="text" placeholder="Search venues…" id="searchInput" oninput="handleSearch(this.value)">
+      </div>
+      <button class="icon-btn" title="Export CSV" onclick="exportCSV()">↓</button>
+    </div>
+  </div>
+  <div class="content">
+
+    <!-- DASHBOARD -->
+    <div class="view active" id="view-dashboard">
+      <div class="stats-row" id="dash-stats"></div>
+      <div class="dash-grid">
+        <div class="dash-block">
+          <div class="section-row"><div class="section-title">Top Ranked Venues</div><span class="see-all" onclick="showView('rankings',document.querySelector('[onclick*=rankings]'))">See all →</span></div>
+          <div class="recent-list" id="dash-top-venues"></div>
+        </div>
+        <div class="dash-block">
+          <div class="section-row"><div class="section-title">Pipeline Overview</div><span class="see-all" onclick="showView('pipeline',document.querySelector('[onclick*=pipeline]'))">See all →</span></div>
+          <div class="pipeline-viz" id="dash-pipeline"></div>
+        </div>
+        <div class="dash-block">
+          <div class="section-row"><div class="section-title">Active Partners</div></div>
+          <div class="recent-list" id="dash-active"></div>
+        </div>
+        <div class="dash-block">
+          <div class="section-row"><div class="section-title">Follow-Ups Due</div></div>
+          <div class="recent-list" id="dash-followups"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DIRECTORY -->
+    <div class="view" id="view-directory">
+      <div class="filter-bar">
+        <span class="filter-label">Filter:</span>
+        <span class="filter-chip active" onclick="filterDir('all',this)">All</span>
+        <span class="filter-chip" onclick="filterDir('Active Partner',this)">Active</span>
+        <span class="filter-chip" onclick="filterDir('In Talks',this)">In Talks</span>
+        <span class="filter-chip" onclick="filterDir('Warm Lead',this)">Warm Lead</span>
+        <span class="filter-chip" onclick="filterDir('Prospecting',this)">Prospecting</span>
+        <span class="filter-chip" onclick="filterDir('black-owned',this)">Black-Owned</span>
+      </div>
+      <div class="grid" id="venue-grid"></div>
+    </div>
+
+    <!-- RANKINGS -->
+    <div class="view" id="view-rankings">
+      <div class="section-row" style="margin-bottom:20px">
+        <div class="section-title">ATCHÉ Venue Score Rankings</div>
+        <div style="font-size:11px;color:var(--text3)">Composite score across 6 criteria · weighted by ATCHÉ priority</div>
+      </div>
+      <div class="rank-list" id="rank-list"></div>
+    </div>
+
+    <!-- PIPELINE -->
+    <div class="view" id="view-pipeline">
+      <div class="kanban" id="kanban-board"></div>
+    </div>
+
+    <!-- TABLE -->
+    <div class="view" id="view-table">
+      <div class="filter-bar">
+        <span class="filter-label">Sort by:</span>
+        <span class="filter-chip active" onclick="sortTable('score',this)">ATCHÉ Score</span>
+        <span class="filter-chip" onclick="sortTable('name',this)">Name</span>
+        <span class="filter-chip" onclick="sortTable('status',this)">Status</span>
+        <span class="filter-chip" onclick="sortTable('capacity',this)">Capacity</span>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr>
+            <th>#</th><th>Venue</th><th>Neighborhood</th><th>Status</th><th>Contact</th>
+            <th>Capacity</th><th>ATCHÉ Score</th><th>Cultural Fit</th><th>Revenue Terms</th>
+            <th>Last Contact</th><th>Next Follow-Up</th><th>Pipeline Stage</th>
+          </tr></thead>
+          <tbody id="table-body"></tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</div>
+</div>
+
+<!-- VENUE DETAIL MODAL -->
+<div class="modal-overlay" id="venueModal">
+  <div class="modal">
+    <div class="modal-hero">
+      <div class="modal-icon" id="modal-icon">🏛️</div>
+      <div class="modal-hero-info">
+        <div class="modal-hero-name" id="modal-name">–</div>
+        <div class="modal-hero-sub" id="modal-sub">–</div>
+        <div style="margin-top:8px;display:flex;gap:6px" id="modal-badges"></div>
+      </div>
+      <div>
+        <div class="modal-hero-score" id="modal-score">–</div>
+        <div class="modal-hero-score-lbl">ATCHÉ Score</div>
+      </div>
+      <button class="modal-close" onclick="closeModal('venueModal')">✕</button>
+    </div>
+    <div class="modal-tabs">
+      <div class="modal-tab active" onclick="switchModalTab(0,this)">Overview</div>
+      <div class="modal-tab" onclick="switchModalTab(1,this)">Scoring</div>
+      <div class="modal-tab" onclick="switchModalTab(2,this)">Revenue</div>
+      <div class="modal-tab" onclick="switchModalTab(3,this)">Relationship</div>
+      <div class="modal-tab" onclick="switchModalTab(4,this)">Event History</div>
+      <div class="modal-tab" onclick="switchModalTab(5,this)">Notes</div>
+    </div>
+    <div class="modal-body">
+      <div class="modal-tab-content active" id="mtab-0"><div class="info-grid" id="modal-overview-grid"></div></div>
+      <div class="modal-tab-content" id="mtab-1">
+        <div style="margin-bottom:12px;font-size:12px;color:var(--text3);line-height:1.6">Each criterion scored 0–10. Weighted composite gives the ATCHÉ Score (0–100).</div>
+        <div class="criteria-grid" id="modal-scoring"></div>
+        <div class="total-score-row"><div><div style="font-size:13px;font-weight:600;color:var(--text)">ATCHÉ Composite Score</div><div style="font-size:11px;color:var(--text3);margin-top:2px">Weighted across 6 criteria</div></div><div class="total-score-num" id="modal-total-score">–</div></div>
+      </div>
+      <div class="modal-tab-content" id="mtab-2"><div class="info-grid" id="modal-revenue-grid"></div></div>
+      <div class="modal-tab-content" id="mtab-3"><div class="info-grid" id="modal-relationship-grid"></div></div>
+      <div class="modal-tab-content" id="mtab-4"><div class="event-log" id="modal-events"></div></div>
+      <div class="modal-tab-content" id="mtab-5">
+        <div class="note-list" id="modal-notes-list"></div>
+        <div class="add-note-row">
+          <textarea class="add-note-input" id="newNoteInput" placeholder="Add a note about this venue…" rows="2"></textarea>
+          <button class="add-note-btn" onclick="addNote()">+ Add</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ADD VENUE MODAL -->
+<div class="modal-overlay" id="addModal">
+  <div class="modal">
+    <div class="modal-hero" style="align-items:center;justify-content:space-between;padding:24px 24px 20px">
+      <div><div class="modal-hero-name">Add New Venue</div><div class="modal-hero-sub" style="margin-top:4px">Fill in what you know</div></div>
+      <button class="modal-close" style="position:static;width:auto;height:auto;border-radius:var(--radius-sm);padding:8px 14px;font-size:13px" onclick="closeModal('addModal')">✕ Close</button>
+    </div>
+    <div class="modal-body" style="max-height:70vh;overflow-y:auto">
+      <div class="form-section">Venue Details</div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Venue Name *</label><input class="form-input" id="f-name" placeholder="Focus Social Club"></div>
+        <div class="form-group"><label class="form-label">Emoji / Icon</label><input class="form-input" id="f-icon" placeholder="🏛️" maxlength="4"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Address</label><input class="form-input" id="f-address" placeholder="1348 H Street NE"></div>
+        <div class="form-group"><label class="form-label">Neighborhood</label><input class="form-input" id="f-neighborhood" placeholder="H Street NE"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Venue Type</label>
+          <select class="form-select" id="f-type"><option>Lounge</option><option>Bar & Lounge</option><option>Club</option><option>Event Space</option><option>Restaurant + Bar</option><option>Rooftop</option><option>Multi-Level</option></select>
+        </div>
+        <div class="form-group"><label class="form-label">Seated Capacity</label><input class="form-input" id="f-capacity" type="number" placeholder="150"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Standing Capacity</label><input class="form-input" id="f-cap-standing" type="number" placeholder="300"></div>
+        <div class="form-group"><label class="form-label">Black-Owned?</label>
+          <select class="form-select" id="f-blackowned"><option value="yes">Yes</option><option value="no">No</option><option value="unknown">Unknown</option></select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Instagram</label><input class="form-input" id="f-ig" placeholder="@focussocialclub"></div>
+        <div class="form-group"><label class="form-label">Website</label><input class="form-input" id="f-website" placeholder="focussocialclub.com"></div>
+      </div>
+      <div class="form-section">Contact</div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Contact Name</label><input class="form-input" id="f-contact" placeholder="Neb"></div>
+        <div class="form-group"><label class="form-label">Title / Role</label><input class="form-input" id="f-role" placeholder="Owner"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Phone</label><input class="form-input" id="f-phone" placeholder="+1 (202) 000-0000"></div>
+        <div class="form-group"><label class="form-label">Email</label><input class="form-input" id="f-email" type="email" placeholder="name@venue.com"></div>
+      </div>
+      <div class="form-section">Partnership</div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Status</label>
+          <select class="form-select" id="f-status"><option>Active Partner</option><option>In Talks</option><option>Warm Lead</option><option>Prospecting</option><option>Cold Lead</option><option>Passed</option></select>
+        </div>
+        <div class="form-group"><label class="form-label">Pipeline Stage</label>
+          <select class="form-select" id="f-pipeline"><option>Prospecting</option><option>First Contact</option><option>Meeting Set</option><option>Proposal Sent</option><option>Negotiating</option><option>Signed</option><option>Active</option><option>Paused</option></select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Last Contact</label><input class="form-input" id="f-lastcontact" type="date"></div>
+        <div class="form-group"><label class="form-label">Next Follow-Up</label><input class="form-input" id="f-followup" type="date"></div>
+      </div>
+      <div class="form-section">Revenue Terms</div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Bar Revenue %</label><input class="form-input" id="f-barrev" placeholder="100% to ATCHÉ"></div>
+        <div class="form-group"><label class="form-label">Venue Fee</label><input class="form-input" id="f-venuefee" placeholder="None"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Table Package Min</label><input class="form-input" id="f-tablemin" placeholder="$300"></div>
+        <div class="form-group"><label class="form-label">First Friday Available?</label>
+          <select class="form-select" id="f-ff"><option>Yes</option><option>Negotiable</option><option>No</option><option>Unknown</option></select>
+        </div>
+      </div>
+      <div class="form-section">ATCHÉ Score (0–10 each)</div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Cultural Fit (25%)</label><input class="form-input" id="f-s1" type="number" min="0" max="10" placeholder="8"></div>
+        <div class="form-group"><label class="form-label">Vibe / Aesthetic (20%)</label><input class="form-input" id="f-s2" type="number" min="0" max="10" placeholder="8"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Revenue Terms (20%)</label><input class="form-input" id="f-s3" type="number" min="0" max="10" placeholder="7"></div>
+        <div class="form-group"><label class="form-label">Location / Access (15%)</label><input class="form-input" id="f-s4" type="number" min="0" max="10" placeholder="8"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Capacity Fit (10%)</label><input class="form-input" id="f-s5" type="number" min="0" max="10" placeholder="7"></div>
+        <div class="form-group"><label class="form-label">Amenities (10%)</label><input class="form-input" id="f-s6" type="number" min="0" max="10" placeholder="8"></div>
+      </div>
+      <div class="form-section">Notes & Tags</div>
+      <div class="form-row">
+        <div class="form-group full"><label class="form-label">Tags (comma-separated)</label><input class="form-input" id="f-tags" placeholder="hookah, black-owned, full bar, private room"></div>
+      </div>
+      <div class="form-group full" style="margin-bottom:12px"><label class="form-label">Vibe / Notes</label><textarea class="form-textarea" id="f-notes" placeholder="What makes this venue right (or wrong) for ATCHÉ…"></textarea></div>
+      <div class="form-btns">
+        <button class="btn-cancel" onclick="closeModal('addModal')">Cancel</button>
+        <button class="btn-save" onclick="saveNewVenue()">Save Venue</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── SUPABASE ──────────────────────────────────────────────────────
+const SB_URL = 'https://aayigsbmmdolvnicxacs.supabase.co';
+const SB_KEY = 'sb_publishable_ofAZ_64cKZXJefM5nbbt3g_wNOoF5DC';
+const sb = supabase.createClient(SB_URL, SB_KEY);
+let currentUser = null;
+let saveTimer = null;
+
+// ── CRITERIA ──────────────────────────────────────────────────────
+const CRITERIA = [
+  { key:'culturalFit',  label:'Cultural Fit',     weight:0.25, color:'#C9A84C', desc:'Black-owned? HBCU adjacent? Do our women already go here?' },
+  { key:'vibe',         label:'Vibe & Aesthetic',  weight:0.20, color:'#8B6BB1', desc:'Does the space match ATCHÉ brand energy?' },
+  { key:'revenueTerms', label:'Revenue Terms',     weight:0.20, color:'#6B9E7A', desc:'Bar cut, table packages, venue fee, financial fairness' },
+  { key:'location',     label:'Location & Access', weight:0.15, color:'#5B8DB8', desc:'Metro accessible, safe, DC-coded neighborhood' },
+  { key:'capacityFit',  label:'Capacity Fit',      weight:0.10, color:'#C2697A', desc:'Ideal: 30–150 seated. Intimacy matters.' },
+  { key:'amenities',    label:'Amenities',         weight:0.10, color:'#D4843A', desc:'Hookah, full bar, AV/sound, private areas, outdoor' },
+];
+
+const STAGES = [
+  { id:'prospecting',  label:'Prospecting',  color:'#5B8DB8', bg:'rgba(91,141,184,0.12)' },
+  { id:'firstcontact', label:'First Contact', color:'#8B6BB1', bg:'rgba(139,107,177,0.12)' },
+  { id:'meetingset',   label:'Meeting Set',   color:'#D4843A', bg:'rgba(212,132,58,0.12)' },
+  { id:'proposalsent', label:'Proposal Sent', color:'#C9A84C', bg:'rgba(201,168,76,0.12)' },
+  { id:'negotiating',  label:'Negotiating',   color:'#C2697A', bg:'rgba(194,105,122,0.12)' },
+  { id:'signed',       label:'Signed',        color:'#6B9E7A', bg:'rgba(107,158,122,0.12)' },
+  { id:'active',       label:'Active',        color:'#9DC9A8', bg:'rgba(107,158,122,0.18)' },
+];
+
+const STAGE_MAP = {
+  'Prospecting':'prospecting','First Contact':'firstcontact','Meeting Set':'meetingset',
+  'Proposal Sent':'proposalsent','Negotiating':'negotiating','Signed':'signed',
+  'Active':'active','Paused':'prospecting'
+};
+
+// ── SEED DATA ─────────────────────────────────────────────────────
+function getSeedVenues() {
+  return [
+    { id:1, name:'Focus Social Club', icon:'🏛️', address:'1348 H Street NE', neighborhood:'H Street NE', type:'Multi-Level Bar & Lounge', sqft:'10,000 sq ft', capacitySeated:300, capacityStanding:500, blackOwned:true, ig:'@focussocialclub', website:'focussocialclub.com', contact:'Neb', role:'Owner', phone:'', email:'', status:'Active Partner', pipeline:'Active', lastContact:'2026-06-05', followUp:'2026-06-15', barRevenue:'100% bar revenue to ATCHÉ', venueFee:'None', tableMin:'$300', firstFriday:'Yes', scores:{ culturalFit:10, vibe:9, revenueTerms:10, location:9, capacityFit:8, amenities:9 }, tags:['black-owned','hookah','full bar','private rooms','multi-level','hbcu adjacent','h street'], vibe:'10,000 sq ft of Black-owned DC culture. The founding home. Neb offered 100% bar revenue + 20% co-founder equity. This is the house.', notes:[{ text:'Neb confirmed 100% bar revenue for ATCHÉ Fridays. No venue fee. Relationship is strong.', date:'2026-06-05' }], events:[] },
+    { id:2, name:'Everyday People', icon:'🎶', address:'H Street / NE DC', neighborhood:'Northeast DC', type:'Event Brand & Venue', sqft:'–', capacitySeated:200, capacityStanding:400, blackOwned:true, ig:'@everydaypeopleDC', website:'', contact:'Reggie', role:'Owner', phone:'', email:'', status:'In Talks', pipeline:'Meeting Set', lastContact:'2026-06-08', followUp:'2026-06-12', barRevenue:'TBD', venueFee:'TBD', tableMin:'TBD', firstFriday:'Negotiable', scores:{ culturalFit:9, vibe:8, revenueTerms:6, location:8, capacityFit:7, amenities:7 }, tags:['black-owned','hbcu adjacent','nightlife brand','live music','northeast dc'], vibe:"Reggie's brand has serious DC credibility. Good second city or rotation venue.", notes:[{ text:'Pitching Juneteenth collab. Need in-person meeting this week.', date:'2026-06-08' }], events:[] },
+    { id:3, name:'Lux Lounge', icon:'✦', address:'649 New York Ave NW', neighborhood:'Shaw / Downtown', type:'Lounge', sqft:'3,500 sq ft', capacitySeated:80, capacityStanding:150, blackOwned:true, ig:'@luxloungedc', website:'', contact:'Unknown', role:'Management', phone:'', email:'', status:'Warm Lead', pipeline:'First Contact', lastContact:'', followUp:'2026-06-20', barRevenue:'Unknown', venueFee:'Unknown', tableMin:'$200', firstFriday:'Unknown', scores:{ culturalFit:8, vibe:8, revenueTerms:5, location:7, capacityFit:9, amenities:6 }, tags:['black-owned','lounge','shaw','intimate'], vibe:'Small, intimate, Black-owned — capacity fits the 30-seat ATCHÉ format perfectly.', notes:[], events:[] },
+    { id:4, name:'DECADES', icon:'🎴', address:'Georgetown / Waterfront', neighborhood:'Georgetown', type:'Multi-Room Club', sqft:'8,000 sq ft', capacitySeated:150, capacityStanding:400, blackOwned:false, ig:'@decadesdc', website:'', contact:'Unknown', role:'Events Manager', phone:'', email:'', status:'Prospecting', pipeline:'Prospecting', lastContact:'', followUp:'2026-07-01', barRevenue:'Unknown', venueFee:'$1,500–$3,000', tableMin:'$500', firstFriday:'Negotiable', scores:{ culturalFit:5, vibe:6, revenueTerms:4, location:5, capacityFit:7, amenities:8 }, tags:['multi-room','full bar','av system','rooftop access','georgetown'], vibe:"Not Black-owned. Georgetown doesn't code HBCU. Possible for a crossover event once we're established.", notes:[], events:[] },
+    { id:5, name:'Dirty Habit', icon:'⬡', address:'555 8th St NW', neighborhood:'Penn Quarter', type:'Restaurant & Rooftop Bar', sqft:'–', capacitySeated:120, capacityStanding:250, blackOwned:false, ig:'@dirtyhabitdc', website:'dirtyhabit.com', contact:'Unknown', role:'Events', phone:'', email:'', status:'Cold Lead', pipeline:'Prospecting', lastContact:'', followUp:'2026-08-01', barRevenue:'Unknown', venueFee:'$2,000+', tableMin:'$400', firstFriday:'Unknown', scores:{ culturalFit:4, vibe:7, revenueTerms:3, location:6, capacityFit:6, amenities:7 }, tags:['rooftop','full bar','penn quarter','outdoor','restaurant'], vibe:'Beautiful rooftop but high venue fees and not culturally aligned. Brand activation only.', notes:[], events:[] }
+  ];
+}
+
+// ── STATE ─────────────────────────────────────────────────────────
+let venues = [];
+let currentVenueId = null;
+let sortKey = 'score';
+let filterStatus = 'all';
+let searchQuery = '';
+
+// ── SUPABASE PERSISTENCE ──────────────────────────────────────────
+async function loadFromSupabase() {
+  if(!currentUser) return;
+  setSyncStatus('loading');
+  const { data, error } = await sb.from('atche_venues')
+    .select('venues').eq('user_id', currentUser.id).maybeSingle();
+  if(error && error.code !== 'PGRST116') { setSyncStatus('error'); return; }
+  if(data && data.venues) {
+    venues = typeof data.venues === 'string' ? JSON.parse(data.venues) : data.venues;
+  } else {
+    venues = getSeedVenues();
+    await pushToSupabase();
+  }
+  setSyncStatus('synced');
+}
+
+async function pushToSupabase() {
+  if(!currentUser) return;
+  setSyncStatus('saving');
+  const { error } = await sb.from('atche_venues').upsert({
+    user_id: currentUser.id,
+    venues: venues,
+    updated_at: new Date().toISOString()
+  }, { onConflict: 'user_id' });
+  if(error) { console.error(error); setSyncStatus('error'); }
+  else setSyncStatus('synced');
+}
+
+function scheduleSave() {
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(pushToSupabase, 1200);
+  setSyncStatus('saving');
+}
+
+function setSyncStatus(state) {
+  const el = document.getElementById('syncStatus');
+  const dot = el.querySelector('.sync-dot') || document.createElement('span');
+  dot.className = 'sync-dot' + (state==='saving'?' saving':state==='error'?' error':'');
+  if(!el.querySelector('.sync-dot')) el.prepend(dot);
+  const labels = { loading:'Loading…', saving:'Saving…', synced:'Synced', error:'Sync Error' };
+  el.childNodes[1] ? el.childNodes[1].textContent = labels[state]||'' : el.append(labels[state]||'');
+  el.innerHTML = `<span class="sync-dot${state==='saving'?' saving':state==='error'?' error':''}"></span>${labels[state]||state}`;
+}
+
+function save() { scheduleSave(); }
+
+// ── AUTH ──────────────────────────────────────────────────────────
+async function doLogout() {
+  await sb.auth.signOut();
+  window.location.href = 'atche-hub.html';
+}
+
+function goHub() { window.location.href = 'atche-hub.html'; }
+
+async function bootApp() {
+  const { data: { session } } = await sb.auth.getSession();
+  if(!session) { window.location.href = 'atche-hub.html'; return; }
+  currentUser = session.user;
+  await loadFromSupabase();
+  renderAll();
+  sb.auth.onAuthStateChange(async (event, session) => {
+    if(event === 'SIGNED_OUT') window.location.href = 'atche-hub.html';
+  });
+}
+
+// ── RENDER HELPERS ────────────────────────────────────────────────
+function calcScore(v) {
+  return Math.round(CRITERIA.reduce((sum,c)=>sum+(v.scores[c.key]||0)*c.weight*10, 0));
+}
+
+function getStatusClass(s) {
+  if(s==='Active Partner') return 'status-active';
+  if(s==='In Talks') return 'status-talks';
+  if(s==='Warm Lead') return 'status-warm';
+  if(s==='Prospecting'||s==='Cold Lead') return 'status-prospect';
+  return 'status-passed';
+}
+
+function renderTags(tags) {
+  const colorMap = { 'hookah':'tag-hookah','rooftop':'tag-rooftop','full bar':'tag-fullbar','private rooms':'tag-private','private room':'tag-private','outdoor':'tag-outdoor','av system':'tag-av','lounge':'tag-lounge','black-owned':'tag-blackowned','hbcu adjacent':'tag-hbcu','live music':'tag-livemusic','patio':'tag-patio','multi-level':'tag-private','multi-room':'tag-private','nightlife brand':'tag-hookah' };
+  return (tags||[]).map(t=>`<span class="tag ${colorMap[t.toLowerCase()]||'tag-hookah'}">${t}</span>`).join('');
+}
+
+function formatDate(d) {
+  if(!d) return '–';
+  return new Date(d+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+}
+
+// ── DASHBOARD ─────────────────────────────────────────────────────
+function renderDashboard() {
+  const sorted = [...venues].sort((a,b)=>calcScore(b)-calcScore(a));
+  const active = venues.filter(v=>v.status==='Active Partner').length;
+  const inTalks = venues.filter(v=>v.status==='In Talks'||v.status==='Warm Lead').length;
+  const avgScore = venues.length ? Math.round(venues.reduce((s,v)=>s+calcScore(v),0)/venues.length) : 0;
+  const upcoming = venues.filter(v=>v.followUp && new Date(v.followUp)>=new Date()).length;
+  document.getElementById('badge-total').textContent = venues.length;
+  document.getElementById('dash-stats').innerHTML = `
+    <div class="stat-card gold"><div class="stat-card-val">${venues.length}</div><div class="stat-card-lbl">Total Venues</div></div>
+    <div class="stat-card sage"><div class="stat-card-val">${active}</div><div class="stat-card-lbl">Active Partners</div></div>
+    <div class="stat-card amber"><div class="stat-card-val">${inTalks}</div><div class="stat-card-lbl">In Pipeline</div></div>
+    <div class="stat-card violet"><div class="stat-card-val">${avgScore}</div><div class="stat-card-lbl">Avg Score</div></div>
+    <div class="stat-card rose"><div class="stat-card-val">${upcoming}</div><div class="stat-card-lbl">Follow-Ups</div></div>`;
+  document.getElementById('dash-top-venues').innerHTML = sorted.slice(0,4).map(v=>`
+    <div class="recent-item" onclick="openVenue(${v.id})">
+      <div class="ri-icon">${v.icon}</div>
+      <div class="ri-info"><div class="ri-name">${v.name}</div><div class="ri-meta">${v.neighborhood} · ${v.contact}</div></div>
+      <div class="ri-right"><div class="ri-score">${calcScore(v)}</div><div class="ri-status-dot badge ${getStatusClass(v.status)}">${v.status}</div></div>
+    </div>`).join('');
+  const stageCounts = {};
+  STAGES.forEach(s=>stageCounts[s.id]=0);
+  venues.forEach(v=>{ const k=STAGE_MAP[v.pipeline]||'prospecting'; stageCounts[k]=(stageCounts[k]||0)+1; });
+  const maxC = Math.max(...Object.values(stageCounts),1);
+  document.getElementById('dash-pipeline').innerHTML = STAGES.map(s=>`
+    <div class="pipeline-row">
+      <div class="pipeline-label" style="color:${s.color};font-size:11px">${s.label}</div>
+      <div class="pipeline-bar-wrap"><div class="pipeline-bar-fill" style="width:${(stageCounts[s.id]/maxC)*100}%;background:${s.color}"></div></div>
+      <div class="pipeline-count">${stageCounts[s.id]}</div>
+    </div>`).join('');
+  const actives = venues.filter(v=>v.status==='Active Partner');
+  document.getElementById('dash-active').innerHTML = actives.length ? actives.map(v=>`
+    <div class="recent-item" onclick="openVenue(${v.id})">
+      <div class="ri-icon">${v.icon}</div>
+      <div class="ri-info"><div class="ri-name">${v.name}</div><div class="ri-meta">${v.barRevenue}</div></div>
+      <div class="ri-right"><div class="ri-score">${calcScore(v)}</div></div>
+    </div>`).join('') : '<div class="empty-state"><div class="empty-icon">◎</div><p>No active partners yet</p></div>';
+  const fups = venues.filter(v=>v.followUp).sort((a,b)=>new Date(a.followUp)-new Date(b.followUp)).slice(0,4);
+  document.getElementById('dash-followups').innerHTML = fups.length ? fups.map(v=>`
+    <div class="recent-item" onclick="openVenue(${v.id})">
+      <div class="ri-icon">${v.icon}</div>
+      <div class="ri-info"><div class="ri-name">${v.name}</div><div class="ri-meta">Contact: ${v.contact||'–'}</div></div>
+      <div class="ri-right"><div style="font-size:11px;color:var(--gold)">${formatDate(v.followUp)}</div></div>
+    </div>`).join('') : '<div class="empty-state"><div class="empty-icon">📅</div><p>No follow-ups scheduled</p></div>';
+}
+
+// ── DIRECTORY ─────────────────────────────────────────────────────
+function renderDirectory() {
+  let filtered = venues.filter(v=>{
+    const ms = !searchQuery || v.name.toLowerCase().includes(searchQuery)||v.neighborhood.toLowerCase().includes(searchQuery)||(v.contact||'').toLowerCase().includes(searchQuery);
+    const mf = filterStatus==='all'||v.status===filterStatus||(filterStatus==='black-owned'&&v.blackOwned);
+    return ms&&mf;
+  });
+  document.getElementById('venue-grid').innerHTML = filtered.length ? filtered.map(v=>{
+    const sc=calcScore(v);
+    const rank=[...venues].sort((a,b)=>calcScore(b)-calcScore(a)).findIndex(x=>x.id===v.id)+1;
+    return `<div class="venue-card" onclick="openVenue(${v.id})">
+      <div class="card-header">
+        <div class="card-header-bg"></div>
+        <div class="card-rank-badge">#${rank}</div>
+        <div class="card-status-badge badge ${getStatusClass(v.status)}">${v.status}</div>
+        <div class="card-score-circle"><div class="score-num">${sc}</div><div class="score-lbl">score</div></div>
+      </div>
+      <div class="card-body">
+        <div style="display:flex;align-items:flex-start;gap:8px;margin-bottom:4px">
+          <div style="font-size:20px;line-height:1">${v.icon}</div>
+          <div><div class="card-name">${v.name}</div><div class="card-location">📍 ${v.neighborhood} · ${v.type}</div></div>
+        </div>
+        <div class="card-tags">${renderTags(v.tags.slice(0,4))}</div>
+        <div class="card-metrics">
+          <div class="metric"><div class="metric-val">${v.capacitySeated}</div><div class="metric-lbl">Seated</div></div>
+          <div class="metric"><div class="metric-val">${v.scores.culturalFit||'–'}/10</div><div class="metric-lbl">Culture</div></div>
+          <div class="metric"><div class="metric-val">${v.firstFriday==='Yes'?'✓':'~'}</div><div class="metric-lbl">1st Fri</div></div>
+        </div>
+        <div class="card-contact"><span class="card-contact-name">${v.contact||'No contact'} · ${v.role||'–'}</span><span class="card-next">${v.followUp?formatDate(v.followUp):''}</span></div>
+      </div>
+    </div>`;
+  }).join('') : '<div class="empty-state" style="grid-column:1/-1"><div class="empty-icon">◎</div><p>No venues match your filter.</p></div>';
+}
+
+// ── RANKINGS ──────────────────────────────────────────────────────
+function renderRankings() {
+  const sorted = [...venues].sort((a,b)=>calcScore(b)-calcScore(a));
+  document.getElementById('rank-list').innerHTML = sorted.map((v,i)=>{
+    const sc=calcScore(v);
+    const nc=i===0?'top1':i===1?'top2':i===2?'top3':'';
+    return `<div class="rank-item" onclick="openVenue(${v.id})">
+      <div class="rank-num ${nc}">${i+1}</div>
+      <div class="rank-icon">${v.icon}</div>
+      <div class="rank-info">
+        <div class="rank-name">${v.name}${v.blackOwned?'<span class="badge tag-blackowned" style="font-size:9px;margin-left:6px">Black-Owned</span>':''}</div>
+        <div class="rank-sub">${v.neighborhood} · ${v.type} · ${v.contact||'No contact'}</div>
+        <div class="rank-detail-row">${CRITERIA.map(c=>`<span class="rank-chip">${c.label.split(' ')[0]}: ${v.scores[c.key]||0}</span>`).join('')}</div>
+      </div>
+      <div class="rank-bar-wrap"><div class="rank-bar" style="width:${sc}%"></div></div>
+      <div class="rank-score"><div class="rank-score-val">${sc}</div><div class="rank-score-lbl">/ 100</div><div class="badge ${getStatusClass(v.status)}" style="margin-top:4px;font-size:9px">${v.status}</div></div>
+    </div>`;
+  }).join('');
+}
+
+// ── PIPELINE ──────────────────────────────────────────────────────
+function renderPipeline() {
+  document.getElementById('kanban-board').innerHTML = STAGES.map(stage=>{
+    const cards = venues.filter(v=>(STAGE_MAP[v.pipeline]||'prospecting')===stage.id);
+    return `<div class="kanban-col">
+      <div class="kanban-col-header" style="background:${stage.bg};color:${stage.color}">${stage.label}<span class="kanban-col-count">${cards.length}</span></div>
+      ${cards.map(v=>`<div class="kanban-card" onclick="openVenue(${v.id})">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px"><span style="font-size:16px">${v.icon}</span><div><div class="kc-name">${v.name}</div><div class="kc-sub">${v.neighborhood}</div></div></div>
+        <div class="kc-tags">${renderTags(v.tags.slice(0,2))}</div>
+        ${v.vibe?`<div class="kc-note">${v.vibe.slice(0,60)}…</div>`:''}
+        <div class="kc-bottom"><div class="kc-score">${calcScore(v)}</div><div class="kc-date">${v.followUp?formatDate(v.followUp):v.contact||''}</div></div>
+      </div>`).join('')}
+    </div>`;
+  }).join('');
+}
+
+// ── TABLE ─────────────────────────────────────────────────────────
+function renderTable() {
+  let data = [...venues];
+  if(sortKey==='score') data.sort((a,b)=>calcScore(b)-calcScore(a));
+  else if(sortKey==='name') data.sort((a,b)=>a.name.localeCompare(b.name));
+  else if(sortKey==='status') data.sort((a,b)=>a.status.localeCompare(b.status));
+  else if(sortKey==='capacity') data.sort((a,b)=>b.capacitySeated-a.capacitySeated);
+  if(searchQuery) data = data.filter(v=>v.name.toLowerCase().includes(searchQuery));
+  document.getElementById('table-body').innerHTML = data.map((v,i)=>`
+    <tr onclick="openVenue(${v.id})" style="cursor:pointer">
+      <td style="color:var(--text3);font-size:12px">${i+1}</td>
+      <td><div style="display:flex;align-items:center;gap:8px"><span>${v.icon}</span><span class="td-name">${v.name}</span>${v.blackOwned?'<span class="badge tag-blackowned">B.O.</span>':''}</div></td>
+      <td>${v.neighborhood}</td>
+      <td><span class="badge ${getStatusClass(v.status)}">${v.status}</span></td>
+      <td>${v.contact||'–'} <span style="color:var(--text3);font-size:10px">${v.role?'· '+v.role:''}</span></td>
+      <td>${v.capacitySeated}</td>
+      <td class="td-score">${calcScore(v)}</td>
+      <td>${v.scores.culturalFit||'–'}/10</td>
+      <td style="font-size:12px;color:var(--text2);max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${v.barRevenue||'TBD'}</td>
+      <td style="font-size:11px;color:var(--text3)">${v.lastContact?formatDate(v.lastContact):'–'}</td>
+      <td style="font-size:11px;color:${v.followUp?'var(--gold)':'var(--text3)'}">${v.followUp?formatDate(v.followUp):'–'}</td>
+      <td style="font-size:11px;color:var(--text2)">${v.pipeline}</td>
+    </tr>`).join('');
+}
+
+// ── VENUE MODAL ───────────────────────────────────────────────────
+function openVenue(id) {
+  currentVenueId = id;
+  const v = venues.find(x=>x.id===id);
+  if(!v) return;
+  const sc = calcScore(v);
+  document.getElementById('modal-icon').textContent = v.icon;
+  document.getElementById('modal-name').textContent = v.name;
+  document.getElementById('modal-sub').textContent = `${v.neighborhood} · ${v.type} · ${v.sqft}`;
+  document.getElementById('modal-score').textContent = sc;
+  document.getElementById('modal-badges').innerHTML = `<span class="badge ${getStatusClass(v.status)}">${v.status}</span>${v.blackOwned?'<span class="badge tag-blackowned">Black-Owned</span>':''}`;
+  document.getElementById('modal-overview-grid').innerHTML = `
+    <div class="info-block"><div class="info-label">Address</div><div class="info-value">${v.address}</div></div>
+    <div class="info-block"><div class="info-label">Neighborhood</div><div class="info-value">${v.neighborhood}</div></div>
+    <div class="info-block"><div class="info-label">Type</div><div class="info-value">${v.type}</div></div>
+    <div class="info-block"><div class="info-label">Sq Ft</div><div class="info-value">${v.sqft}</div></div>
+    <div class="info-block"><div class="info-label">Seated Capacity</div><div class="info-value">${v.capacitySeated}</div></div>
+    <div class="info-block"><div class="info-label">Standing Capacity</div><div class="info-value">${v.capacityStanding}</div></div>
+    <div class="info-block"><div class="info-label">Instagram</div><div class="info-value"><a href="https://instagram.com/${(v.ig||'').replace('@','')}" target="_blank">${v.ig||'–'}</a></div></div>
+    <div class="info-block"><div class="info-label">Website</div><div class="info-value">${v.website?`<a href="https://${v.website}" target="_blank">${v.website}</a>`:'–'}</div></div>
+    <div class="info-block"><div class="info-label">First Friday Available</div><div class="info-value" style="color:${v.firstFriday==='Yes'?'var(--sage-light)':'var(--text)'}">${v.firstFriday||'Unknown'}</div></div>
+    <div class="info-block"><div class="info-label">Black-Owned</div><div class="info-value" style="color:${v.blackOwned?'var(--gold)':'var(--text2)'}">${v.blackOwned?'Yes — verified':'No / Unknown'}</div></div>
+    <div class="info-block full"><div class="info-label">Tags</div><div class="info-value" style="display:flex;flex-wrap:wrap;gap:5px;margin-top:4px">${renderTags(v.tags)}</div></div>
+    <div class="info-block full"><div class="info-label">Vibe Notes</div><div class="info-value" style="color:var(--text2);font-style:italic;line-height:1.6">${v.vibe||'–'}</div></div>`;
+  document.getElementById('modal-scoring').innerHTML = CRITERIA.map(c=>`
+    <div class="criteria-row">
+      <div class="criteria-label">${c.label}</div>
+      <div class="criteria-weight" style="color:${c.color}">${Math.round(c.weight*100)}%</div>
+      <div class="criteria-bar-wrap"><div class="criteria-bar-fill" style="width:${(v.scores[c.key]||0)*10}%;background:${c.color}"></div></div>
+      <div class="criteria-val">${v.scores[c.key]||0}/10</div>
+    </div>
+    <div style="font-size:10px;color:var(--text3);padding:0 0 8px;line-height:1.5">${c.desc}</div>`).join('');
+  document.getElementById('modal-total-score').textContent = sc + ' / 100';
+  document.getElementById('modal-revenue-grid').innerHTML = `
+    <div class="info-block"><div class="info-label">Bar Revenue Split</div><div class="info-value" style="color:var(--gold)">${v.barRevenue||'TBD'}</div></div>
+    <div class="info-block"><div class="info-label">Venue Fee</div><div class="info-value">${v.venueFee||'TBD'}</div></div>
+    <div class="info-block"><div class="info-label">Table Package Min</div><div class="info-value">${v.tableMin||'TBD'}</div></div>
+    <div class="info-block"><div class="info-label">First Friday Available</div><div class="info-value">${v.firstFriday||'Unknown'}</div></div>
+    <div class="info-block full"><div class="info-label">Revenue Terms Score</div>
+      <div style="margin-top:8px;display:flex;align-items:center;gap:12px"><div style="flex:1;height:8px;background:var(--border2);border-radius:4px"><div style="width:${(v.scores.revenueTerms||0)*10}%;height:100%;background:var(--sage);border-radius:4px"></div></div><div style="font-size:20px;font-weight:700;font-family:'Playfair Display',serif;color:var(--gold)">${v.scores.revenueTerms||0}/10</div></div></div>`;
+  document.getElementById('modal-relationship-grid').innerHTML = `
+    <div class="info-block"><div class="info-label">Contact Name</div><div class="info-value">${v.contact||'–'}</div></div>
+    <div class="info-block"><div class="info-label">Title / Role</div><div class="info-value">${v.role||'–'}</div></div>
+    <div class="info-block"><div class="info-label">Phone</div><div class="info-value">${v.phone||'Not on file'}</div></div>
+    <div class="info-block"><div class="info-label">Email</div><div class="info-value">${v.email||'Not on file'}</div></div>
+    <div class="info-block"><div class="info-label">Pipeline Stage</div><div class="info-value">${v.pipeline}</div></div>
+    <div class="info-block"><div class="info-label">Status</div><div class="info-value"><span class="badge ${getStatusClass(v.status)}">${v.status}</span></div></div>
+    <div class="info-block"><div class="info-label">Last Contact</div><div class="info-value">${v.lastContact?formatDate(v.lastContact):'–'}</div></div>
+    <div class="info-block"><div class="info-label">Next Follow-Up</div><div class="info-value" style="color:var(--gold)">${v.followUp?formatDate(v.followUp):'Not scheduled'}</div></div>`;
+  document.getElementById('modal-events').innerHTML = v.events&&v.events.length ? v.events.map(e=>`
+    <div class="event-entry">
+      <div class="event-entry-header"><div class="event-entry-name">${e.name}</div><div class="event-entry-date">${formatDate(e.date)}</div></div>
+      <div class="event-entry-stats">
+        <div class="event-stat"><div class="event-stat-val">${e.attendance}</div><div class="event-stat-lbl">Attendance</div></div>
+        <div class="event-stat"><div class="event-stat-val">${e.revenue}</div><div class="event-stat-lbl">Revenue</div></div>
+        <div class="event-stat"><div class="event-stat-val">${e.rating}/10</div><div class="event-stat-lbl">Rating</div></div>
+      </div>
+    </div>`).join('') : `<div class="empty-state"><div class="empty-icon">🎉</div><p>No events logged yet.<br>First Friday is coming.</p></div>`;
+  renderNotes(v);
+  document.querySelectorAll('.modal-tab').forEach((t,i)=>t.classList.toggle('active',i===0));
+  document.querySelectorAll('.modal-tab-content').forEach((t,i)=>t.classList.toggle('active',i===0));
+  document.getElementById('venueModal').classList.add('open');
+}
+
+function renderNotes(v) {
+  document.getElementById('modal-notes-list').innerHTML = (v.notes||[]).length ? v.notes.map((n,i)=>`
+    <div class="note-entry">
+      <div class="note-entry-text">${n.text}</div>
+      <div class="note-entry-date">${formatDate(n.date)}</div>
+      <button class="note-del" onclick="deleteNote(${v.id},${i})">✕</button>
+    </div>`).join('') : '<div style="color:var(--text3);font-size:13px;padding:8px 0">No notes yet.</div>';
+}
+
+function addNote() {
+  const v = venues.find(x=>x.id===currentVenueId);
+  const text = document.getElementById('newNoteInput').value.trim();
+  if(!v||!text) return;
+  v.notes.unshift({ text, date:new Date().toISOString().slice(0,10) });
+  document.getElementById('newNoteInput').value = '';
+  renderNotes(v); save();
+}
+
+function deleteNote(vid,idx) {
+  const v = venues.find(x=>x.id===vid);
+  if(!v) return;
+  v.notes.splice(idx,1);
+  renderNotes(v); save();
+}
+
+// ── ADD VENUE ─────────────────────────────────────────────────────
+function openAddModal() { document.getElementById('addModal').classList.add('open'); }
+
+function saveNewVenue() {
+  const name = document.getElementById('f-name').value.trim();
+  if(!name) { alert('Venue name is required.'); return; }
+  const v = {
+    id: Date.now(), name, icon: document.getElementById('f-icon').value||'🏛️',
+    address: document.getElementById('f-address').value,
+    neighborhood: document.getElementById('f-neighborhood').value||'Washington DC',
+    type: document.getElementById('f-type').value, sqft:'–',
+    capacitySeated: parseInt(document.getElementById('f-capacity').value)||0,
+    capacityStanding: parseInt(document.getElementById('f-cap-standing').value)||0,
+    blackOwned: document.getElementById('f-blackowned').value==='yes',
+    ig: document.getElementById('f-ig').value, website: document.getElementById('f-website').value,
+    contact: document.getElementById('f-contact').value, role: document.getElementById('f-role').value,
+    phone: document.getElementById('f-phone').value, email: document.getElementById('f-email').value,
+    status: document.getElementById('f-status').value, pipeline: document.getElementById('f-pipeline').value,
+    lastContact: document.getElementById('f-lastcontact').value,
+    followUp: document.getElementById('f-followup').value,
+    barRevenue: document.getElementById('f-barrev').value, venueFee: document.getElementById('f-venuefee').value,
+    tableMin: document.getElementById('f-tablemin').value, firstFriday: document.getElementById('f-ff').value,
+    scores:{ culturalFit:parseInt(document.getElementById('f-s1').value)||5, vibe:parseInt(document.getElementById('f-s2').value)||5, revenueTerms:parseInt(document.getElementById('f-s3').value)||5, location:parseInt(document.getElementById('f-s4').value)||5, capacityFit:parseInt(document.getElementById('f-s5').value)||5, amenities:parseInt(document.getElementById('f-s6').value)||5 },
+    tags: document.getElementById('f-tags').value.split(',').map(t=>t.trim()).filter(Boolean),
+    vibe: document.getElementById('f-notes').value,
+    notes:[], events:[]
+  };
+  venues.push(v); save(); renderAll(); closeModal('addModal');
+  ['f-name','f-icon','f-address','f-neighborhood','f-capacity','f-cap-standing','f-ig','f-website','f-contact','f-role','f-phone','f-email','f-lastcontact','f-followup','f-barrev','f-venuefee','f-tablemin','f-tags','f-notes','f-s1','f-s2','f-s3','f-s4','f-s5','f-s6'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
+}
+
+// ── UTILS ─────────────────────────────────────────────────────────
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+function switchModalTab(idx) {
+  document.querySelectorAll('.modal-tab').forEach((t,i)=>t.classList.toggle('active',i===idx));
+  document.querySelectorAll('.modal-tab-content').forEach((t,i)=>t.classList.toggle('active',i===idx));
+}
+function showView(id, el) {
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('view-'+id).classList.add('active');
+  if(el) el.classList.add('active');
+  const titles={dashboard:'Dashboard',directory:'Venue Directory',rankings:'Rankings',pipeline:'Pipeline',table:'Table View'};
+  const subs={dashboard:'ATCHÉ Venue Intelligence',directory:'All venues in CRM',rankings:'Composite ATCHÉ Score ranking',pipeline:'Partnership pipeline stages',table:'Full data view'};
+  document.getElementById('topbar-title').textContent = titles[id]||id;
+  document.getElementById('topbar-sub').textContent = subs[id]||'';
+  renderAll();
+}
+function filterDir(status, el) {
+  filterStatus=status;
+  document.querySelectorAll('#view-directory .filter-chip').forEach(c=>c.classList.remove('active'));
+  el.classList.add('active'); renderDirectory();
+}
+function sortTable(key, el) {
+  sortKey=key;
+  document.querySelectorAll('#view-table .filter-chip').forEach(c=>c.classList.remove('active'));
+  el.classList.add('active'); renderTable();
+}
+function handleSearch(q) { searchQuery=q.toLowerCase(); renderDirectory(); renderTable(); }
+function exportCSV() {
+  const rows=[['Name','Neighborhood','Status','Pipeline','Contact','ATCHÉ Score','Cultural Fit','Vibe','Revenue','Location','Capacity','Amenities','Bar Revenue','Venue Fee','First Friday']];
+  venues.forEach(v=>rows.push([v.name,v.neighborhood,v.status,v.pipeline,v.contact,calcScore(v),v.scores.culturalFit,v.scores.vibe,v.scores.revenueTerms,v.scores.location,v.scores.capacityFit,v.scores.amenities,v.barRevenue,v.venueFee,v.firstFriday]));
+  const csv=rows.map(r=>r.map(c=>`"${c}"`).join(',')).join('\n');
+  const a=document.createElement('a'); a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);
+  a.download='atche-venues.csv'; a.click();
+}
+function renderAll() { renderDashboard(); renderDirectory(); renderRankings(); renderPipeline(); renderTable(); }
+
+['venueModal','addModal'].forEach(id=>{
+  document.getElementById(id).addEventListener('click',function(e){ if(e.target===this) closeModal(id); });
+});
+
+bootApp();
+</script>
+</body>
+</html>
