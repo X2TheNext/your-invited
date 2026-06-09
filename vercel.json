@@ -2,6 +2,7 @@
   "rewrites": [
     { "source": "/hub", "destination": "/atche-hub.html" },
     { "source": "/followup", "destination": "/atche-followup.html" },
+    { "source": "/playbook", "destination": "/atche-playbook.html" },
     { "source": "/venue-crm", "destination": "/venue-crm.html" },
     { "source": "/tracker", "destination": "/model-tracker.html" },
     { "source": "/onboarding", "destination": "/circle-onboarding.html" },
