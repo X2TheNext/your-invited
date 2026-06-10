@@ -323,6 +323,11 @@ async function doLogin() {
     showErr('Account created. Check your email to confirm, then sign in.');
     return;
   }
+  // Don't rely solely on onAuthStateChange firing — go straight to the hub
+  // if we have a session (fixes "Enter doesn't open the dashboard" on repeat logins).
+  if(data.session){
+    showHub(data.session.user);
+  }
 }
 
 function toggleSetup() {
