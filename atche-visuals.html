@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ATCHÉ VISUALS — Get Your Shots</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Inter:wght@200;300;400;500;600;700&display=swap');
+
+:root {
+  --black: #080808;
+  --surface: #111111;
+  --surface2: #181818;
+  --surface3: #242424;
+  --border: #222222;
+  --border2: #2e2e2e;
+  --gold: #C9A84C;
+  --gold-light: #E2C47A;
+  --gold-dim: rgba(201,168,76,0.12);
+  --text: #F2EDE6;
+  --text2: #B0A898;
+  --text3: #6A6258;
+  --sage: #6B9E7A;
+  --sage-dim: rgba(107,158,122,0.15);
+  --rose: #C2697A;
+  --t: 0.2s cubic-bezier(0.4,0,0.2,1);
+}
+
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'Inter',sans-serif;background:var(--black);color:var(--text);min-height:100vh;padding:24px;overflow-x:hidden}
+
+body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");background-size:200px;opacity:0.025;pointer-events:none;z-index:0}
+
+/* AMBIENT BACKGROUND — soft moving glows + drifting gold dust, kept slow and faint */
+.bg-fx{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+.bg-glow{position:absolute;border-radius:50%;filter:blur(50px);will-change:transform}
+.bg-glow-gold{top:-140px;left:50%;width:560px;height:420px;transform:translate(-50%,var(--py1,0px));background:radial-gradient(ellipse at center, rgba(201,168,76,0.10) 0%, transparent 70%)}
+.bg-glow-rose{bottom:-180px;right:-100px;width:460px;height:460px;transform:translateY(var(--py2,0px));background:radial-gradient(ellipse at center, rgba(194,105,122,0.07) 0%, transparent 70%)}
+.bg-glow-sage{top:40%;left:-160px;width:380px;height:380px;transform:translateY(var(--py3,0px));background:radial-gradient(ellipse at center, rgba(107,158,122,0.06) 0%, transparent 70%)}
+.spark{position:absolute;border-radius:50%;background:var(--gold-light);opacity:0;animation:spark-float linear infinite}
+@keyframes spark-float{
+  0%{opacity:0;transform:translateY(0) scale(0.6)}
+  8%{opacity:0.55}
+  92%{opacity:0.35}
+  100%{opacity:0;transform:translateY(-140px) scale(1)}
+}
+
+.wrap{max-width:640px;margin:0 auto;position:relative;z-index:1}
+
+/* HEADER */
+.av-header{text-align:center;margin-bottom:36px;padding-top:8px;animation:header-in 0.9s cubic-bezier(.16,1,.3,1) both}
+.av-wordmark{font-family:'Playfair Display',serif;font-size:38px;font-weight:700;letter-spacing:8px;display:block;
+  background:linear-gradient(100deg, var(--gold) 25%, var(--gold-light) 50%, var(--gold) 75%);
+  background-size:220% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;
+  animation:wordmark-shine 9s ease-in-out infinite}
+.av-sub{font-family:'Playfair Display',serif;font-size:13px;font-weight:400;font-style:italic;color:var(--text2);letter-spacing:3px;margin-top:2px}
+.av-rule{height:1px;background:rgba(201,168,76,0.3);margin:16px auto;width:0;animation:rule-draw 1s 0.35s cubic-bezier(.16,1,.3,1) forwards}
+.av-tagline{font-size:10px;color:var(--text3);letter-spacing:4px;text-transform:uppercase}
+
+@keyframes header-in{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:translateY(0)}}
+@keyframes wordmark-shine{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
+@keyframes rule-draw{to{width:48px}}
+
+/* CARD */
+.card{background:var(--surface);border:1px solid var(--border2);border-radius:18px;padding:28px;position:relative;overflow:hidden;margin-bottom:20px;transition:border-color .5s var(--t),transform .5s var(--t),box-shadow .5s var(--t)}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(201,168,76,0.3),transparent)}
+.card h2{font-family:'Playfair Display',serif;font-size:19px;font-weight:600;color:var(--text);margin-bottom:4px}
+.card .card-desc{font-size:12px;color:var(--text3);line-height:1.6;margin-bottom:18px}
+.step-tag{display:inline-block;font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--gold);background:var(--gold-dim);border:1px solid rgba(201,168,76,0.3);border-radius:20px;padding:3px 10px;margin-bottom:12px}
+
+/* SCROLL REVEAL — cards rise + fade into place as the page is explored */
+.reveal{opacity:0;transform:translateY(22px);transition:opacity .8s cubic-bezier(.16,1,.3,1),transform .8s cubic-bezier(.16,1,.3,1)}
+.reveal.visible{opacity:1;transform:translateY(0)}
+.reveal.visible:hover{border-color:rgba(201,168,76,0.35);box-shadow:0 14px 36px -18px rgba(0,0,0,0.6)}
+
+/* LOADING / STATUS */
+.center-msg{text-align:center;padding:40px 20px}
+.center-msg .icon{font-size:36px;margin-bottom:12px;display:block;animation:icon-breathe 2.6s ease-in-out infinite}
+.center-msg h2{font-family:'Playfair Display',serif;font-size:20px;font-weight:600;color:var(--text);margin-bottom:10px}
+.center-msg p{font-size:13px;color:var(--text2);line-height:1.7;max-width:380px;margin:0 auto}
+@keyframes icon-breathe{0%,100%{opacity:0.6;transform:scale(1)}50%{opacity:1;transform:scale(1.08)}}
+
+/* GALLERY */
+.gallery-empty{text-align:center;font-size:12px;color:var(--text3);padding:24px 0;font-style:italic}
+.gallery-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:6px}
+.gallery-item{position:relative;border-radius:10px;overflow:hidden;aspect-ratio:1;border:2px solid var(--border2);cursor:pointer;transition:transform .25s var(--t),border-color .25s var(--t),box-shadow .25s var(--t);background:var(--surface2);animation:item-in .5s cubic-bezier(.16,1,.3,1) both;animation-delay:var(--d,0s)}
+.gallery-item:active{transform:scale(0.96)}
+.gallery-item.selected{border-color:var(--gold);box-shadow:0 0 0 1px var(--gold), 0 6px 18px -8px rgba(201,168,76,0.5);transform:scale(1.015)}
+.gallery-item img, .gallery-item video{width:100%;height:100%;object-fit:cover;display:block}
+.gallery-check{position:absolute;top:6px;right:6px;width:22px;height:22px;border-radius:50%;background:rgba(8,8,8,0.7);border:1.5px solid var(--text3);display:flex;align-items:center;justify-content:center;font-size:12px;color:transparent;transform:scale(0.6);transition:var(--t)}
+.gallery-item.selected .gallery-check{background:var(--gold);border-color:var(--gold);color:var(--black);transform:scale(1)}
+@keyframes item-in{from{opacity:0;transform:scale(0.92) translateY(8px)}to{opacity:1;transform:scale(1) translateY(0)}}
+.gallery-tag{position:absolute;bottom:6px;left:6px;font-size:9px;letter-spacing:1px;text-transform:uppercase;font-weight:700;color:var(--gold-light);background:rgba(8,8,8,0.7);border-radius:4px;padding:2px 6px}
+.gallery-placeholder{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:28px;background:var(--surface2);color:var(--text3)}
+.gallery-count{font-size:11px;color:var(--text3);margin-top:12px;text-align:center;letter-spacing:0.5px}
+.gallery-count strong{color:var(--gold)}
+
+/* PACKAGES */
+.pkg{display:flex;align-items:flex-start;gap:14px;border:1px solid var(--border2);border-radius:12px;padding:16px;margin-bottom:10px;cursor:pointer;transition:border-color .25s var(--t),background .25s var(--t),transform .15s var(--t);background:var(--surface2)}
+.pkg:hover{border-color:rgba(201,168,76,0.4)}
+.pkg:active{transform:scale(0.99)}
+.pkg.active{border-color:var(--gold);background:var(--gold-dim);animation:pkg-pulse .5s cubic-bezier(.16,1,.3,1)}
+.pkg-radio{width:18px;height:18px;border-radius:50%;border:1.5px solid var(--text3);flex-shrink:0;margin-top:2px;position:relative;transition:var(--t)}
+.pkg.active .pkg-radio{border-color:var(--gold)}
+.pkg.active .pkg-radio::after{content:'';position:absolute;inset:3px;border-radius:50%;background:var(--gold);animation:radio-pop .35s cubic-bezier(.34,1.56,.64,1)}
+@keyframes pkg-pulse{0%{box-shadow:0 0 0 0 rgba(201,168,76,0.35)}100%{box-shadow:0 0 0 10px rgba(201,168,76,0)}}
+@keyframes radio-pop{from{transform:scale(0)}to{transform:scale(1)}}
+.pkg-body{flex:1}
+.pkg-name{font-size:14px;font-weight:600;color:var(--text);margin-bottom:2px}
+.pkg-desc{font-size:12px;color:var(--text2);line-height:1.6}
+.pkg-price{font-family:'Playfair Display',serif;font-size:20px;font-weight:700;color:var(--gold);white-space:nowrap}
+
+/* TOTAL */
+.total-row{display:flex;align-items:center;justify-content:space-between;padding-top:16px;border-top:1px solid var(--border2);margin-top:6px}
+.total-label{font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--text3)}
+.total-amt{font-family:'Playfair Display',serif;font-size:28px;font-weight:700;color:var(--gold);display:inline-block;transition:transform .25s var(--t)}
+.total-amt.bump{animation:amt-bump .4s cubic-bezier(.34,1.56,.64,1)}
+@keyframes amt-bump{0%{transform:scale(1)}40%{transform:scale(1.18)}100%{transform:scale(1)}}
+
+/* PAYMENT */
+.pay-box{display:flex;gap:20px;align-items:center;flex-wrap:wrap}
+.pay-qr{width:140px;height:140px;border-radius:10px;border:1px solid var(--border2);background:#fff;flex-shrink:0;overflow:hidden}
+.pay-qr img{width:100%;height:100%;display:block}
+.pay-info{flex:1;min-width:180px}
+.pay-handle{font-family:'Playfair Display',serif;font-size:18px;font-weight:700;color:var(--text);margin-bottom:6px}
+.pay-note{font-size:12px;color:var(--text2);line-height:1.7}
+.btn-link{display:inline-block;margin-top:10px;font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--black);background:var(--gold);border-radius:8px;padding:10px 18px;text-decoration:none;transition:transform .2s var(--t),box-shadow .2s var(--t),background .2s var(--t)}
+.btn-link:hover{background:var(--gold-light);transform:translateY(-1px);box-shadow:0 10px 26px -10px rgba(201,168,76,0.55)}
+.btn-link:active{transform:translateY(0) scale(0.985)}
+
+/* CONFIRM / DOWNLOAD */
+.confirm-row{display:flex;align-items:center;gap:10px;margin-bottom:16px}
+.confirm-row input{width:18px;height:18px;accent-color:var(--gold)}
+.confirm-row label{font-size:13px;color:var(--text2)}
+.btn-primary{width:100%;padding:14px;background:var(--gold);color:var(--black);border:none;border-radius:8px;font-size:13px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;cursor:pointer;transition:transform .2s var(--t),box-shadow .2s var(--t),background .2s var(--t)}
+.btn-primary:hover:not(:disabled){background:var(--gold-light);transform:translateY(-1px);box-shadow:0 10px 26px -10px rgba(201,168,76,0.55)}
+.btn-primary:active:not(:disabled){transform:translateY(0) scale(0.985)}
+.btn-primary:disabled{opacity:0.35;cursor:not-allowed}
+.btn-primary.unlocked{animation:unlock-glow 1.1s cubic-bezier(.16,1,.3,1)}
+@keyframes unlock-glow{0%{box-shadow:0 0 0 0 rgba(201,168,76,0.55)}70%{box-shadow:0 0 0 18px rgba(201,168,76,0)}100%{box-shadow:0 0 0 0 rgba(201,168,76,0)}}
+.delivery-msg{display:none;text-align:center;padding:18px 0 4px;font-size:13px;color:var(--sage)}
+.delivery-msg.show{display:block;animation:fade-up .5s cubic-bezier(.16,1,.3,1)}
+.pay-pending{text-align:center;font-size:12px;color:var(--text3);line-height:1.6;padding:14px;border:1px solid var(--border2);border-radius:10px;margin-bottom:16px;background:var(--surface2);display:flex;align-items:center;justify-content:center;gap:8px;animation:fade-up .5s cubic-bezier(.16,1,.3,1)}
+.pay-pending::before{content:'';width:8px;height:8px;border-radius:50%;background:var(--gold);flex-shrink:0;animation:pulse-dot 1.4s ease-in-out infinite}
+@keyframes pulse-dot{0%,100%{opacity:0.35;transform:scale(0.85)}50%{opacity:1;transform:scale(1.15)}}
+@keyframes fade-up{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+/* FOOTER / RECRUIT */
+.recruit{text-align:center;padding:8px 4px 4px}
+.recruit p{font-size:12px;color:var(--text2);line-height:1.8;margin-bottom:14px}
+.recruit p strong{color:var(--gold)}
+.recruit a.btn-link{background:transparent;border:1px solid var(--gold);color:var(--gold)}
+.recruit a.btn-link:hover{background:var(--gold-dim)}
+
+/* RECRUIT — QUICK INTEREST */
+.recruit-quick{margin-top:18px;padding-top:16px;border-top:1px solid var(--border2)}
+.recruit-quick-label{font-size:11px;color:var(--text3);margin-bottom:8px;letter-spacing:0.3px}
+.recruit-quick-row{display:flex;gap:8px}
+.recruit-quick-row input{flex:1;min-width:0;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;padding:10px 12px;color:var(--text);font-size:13px;outline:none;transition:border-color var(--t);font-family:'Inter',sans-serif}
+.recruit-quick-row input:focus{border-color:var(--gold)}
+.recruit-quick-row input::placeholder{color:var(--text3)}
+.recruit-quick-row button.btn-link{margin-top:0;padding:10px 16px;flex-shrink:0;white-space:nowrap;border:1px solid var(--gold);background:transparent;color:var(--gold);font-family:'Inter',sans-serif;cursor:pointer}
+.recruit-quick-row button.btn-link:hover{background:var(--gold-dim)}
+.recruit-quick-row button.btn-link:disabled{opacity:0.5;cursor:default}
+.recruit-quick-status{font-size:11px;color:var(--sage);margin-top:8px;min-height:14px}
+.recruit-quick-status.err{color:var(--rose)}
+
+.av-footer{text-align:center;font-size:10px;color:var(--text3);letter-spacing:1px;padding:18px 0 4px}
+
+@media (max-width:480px){
+  .gallery-grid{grid-template-columns:repeat(2,1fr)}
+  .pay-box{justify-content:center}
+}
+</style>
+</head>
+<body>
+
+<!-- AMBIENT BACKGROUND -->
+<div class="bg-fx" aria-hidden="true">
+  <div class="bg-glow bg-glow-gold"></div>
+  <div class="bg-glow bg-glow-rose"></div>
+  <div class="bg-glow bg-glow-sage"></div>
+  <div id="sparkleField"></div>
+</div>
+
+<div class="wrap">
+
+  <!-- HEADER -->
+  <div class="av-header">
+    <span class="av-wordmark">ATCHÉ VISUALS</span>
+    <div class="av-sub">Nightlife Photography &amp; Performance Reels</div>
+    <div class="av-rule"></div>
+    <div class="av-tagline">Washington, DC</div>
+  </div>
+
+  <!-- LOADING -->
+  <div class="card" id="loadingCard">
+    <div class="center-msg">
+      <span class="icon">✦</span>
+      <h2>Finding your gallery…</h2>
+    </div>
+  </div>
+
+  <!-- NO CODE / LANDING -->
+  <div class="card" id="landingCard" style="display:none">
+    <div class="center-msg">
+      <span class="icon">📷</span>
+      <h2>Get your shots from tonight</h2>
+      <p>If a photographer from ATCHÉ Visuals shot you tonight, ask them for your link or scan the QR code they show you — it opens your private gallery right here.</p>
+    </div>
+  </div>
+
+  <!-- SESSION NOT FOUND -->
+  <div class="card" id="notFoundCard" style="display:none">
+    <div class="center-msg">
+      <span class="icon">🔍</span>
+      <h2>We can't find that gallery</h2>
+      <p>This link may have expired or been typed wrong. Check with your photographer for a fresh link.</p>
+    </div>
+  </div>
+
+  <!-- MAIN FLOW (hidden until session loads) -->
+  <div id="mainFlow" style="display:none">
+
+    <!-- STEP 1: GALLERY -->
+    <div class="card reveal">
+      <span class="step-tag" id="sessionLabelTag">Your Gallery</span>
+      <h2>Pick what you want</h2>
+      <p class="card-desc">Previews are watermarked. Tap what you want, choose a package below, and your clean, full-resolution originals unlock the moment you pay.</p>
+      <div class="gallery-empty" id="galleryEmpty">Your photographer is still uploading — check back in a moment.</div>
+      <div class="gallery-grid" id="galleryGrid" style="display:none"></div>
+      <div class="gallery-count" id="galleryCount" style="display:none"></div>
+    </div>
+
+    <!-- STEP 2: PACKAGES -->
+    <div class="card reveal">
+      <span class="step-tag">Step 2 — Pick Your Package</span>
+      <h2>Choose what you want</h2>
+      <p class="card-desc">No edits, no waiting around — content is yours once it's paid for.</p>
+
+      <div class="pkg active" data-price="5" data-name="Quick Shot" onclick="selectPkg(this)">
+        <div class="pkg-radio"></div>
+        <div class="pkg-body">
+          <div class="pkg-name">Quick Shot</div>
+          <div class="pkg-desc">1 photo, full resolution</div>
+        </div>
+        <div class="pkg-price">$5</div>
+      </div>
+
+      <div class="pkg" data-price="20" data-name="Photo Bundle" onclick="selectPkg(this)">
+        <div class="pkg-radio"></div>
+        <div class="pkg-body">
+          <div class="pkg-name">Photo Bundle</div>
+          <div class="pkg-desc">Up to 8 edited photos from tonight</div>
+        </div>
+        <div class="pkg-price">$20</div>
+      </div>
+
+      <div class="pkg" data-price="40" data-name="Spotlight Package" onclick="selectPkg(this)">
+        <div class="pkg-radio"></div>
+        <div class="pkg-body">
+          <div class="pkg-name">Spotlight Package</div>
+          <div class="pkg-desc">5–10 curated photos + 1 short vertical clip, edited for your story — main character treatment</div>
+        </div>
+        <div class="pkg-price">$40</div>
+      </div>
+
+      <div class="pkg" data-price="50" data-name="Performance Reel — Basic" onclick="selectPkg(this)">
+        <div class="pkg-radio"></div>
+        <div class="pkg-body">
+          <div class="pkg-name">Performance Reel — Basic</div>
+          <div class="pkg-desc">60–90 sec highlight reel + 5 photos</div>
+        </div>
+        <div class="pkg-price">$50</div>
+      </div>
+
+      <div class="pkg" data-price="60" data-name="Table Package" onclick="selectPkg(this)">
+        <div class="pkg-radio"></div>
+        <div class="pkg-body">
+          <div class="pkg-name">Table Package</div>
+          <div class="pkg-desc">Photos + a quick group reel for your whole table — built for bottle service, one pickup covers everyone</div>
+        </div>
+        <div class="pkg-price">$60</div>
+      </div>
+
+      <div class="pkg" data-price="100" data-name="Performance Reel — Premium" onclick="selectPkg(this)">
+        <div class="pkg-radio"></div>
+        <div class="pkg-body">
+          <div class="pkg-name">Performance Reel — Premium</div>
+          <div class="pkg-desc">Full edit, color grade &amp; captions + 10 photos — built to post</div>
+        </div>
+        <div class="pkg-price">$100</div>
+      </div>
+
+      <div class="total-row">
+        <span class="total-label">Total Due</span>
+        <span class="total-amt" id="totalAmt">$5</span>
+      </div>
+    </div>
+
+    <!-- STEP 3: PAYMENT -->
+    <div class="card reveal">
+      <span class="step-tag">Step 3 — Pay</span>
+      <h2>Scan to pay with Cash App</h2>
+      <p class="card-desc">Scan the code or tap the button — it's pre-loaded with your total. Once paid, check the box below to unlock your download.</p>
+      <div class="pay-box">
+        <div class="pay-qr"><img id="qrImg" alt="Cash App QR code"></div>
+        <div class="pay-info">
+          <div class="pay-handle">$XaveirMSnow</div>
+          <div class="pay-note">Cash App handles all payments. Tap below to open Cash App with your total already filled in.</div>
+          <a class="btn-link" id="payLink" target="_blank" rel="noopener">Pay with Cash App</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 4: CONFIRM & DOWNLOAD -->
+    <div class="card reveal">
+      <span class="step-tag">Step 4 — Get Your Content</span>
+      <h2>Confirm payment &amp; download</h2>
+      <p class="card-desc" id="payHelp">Once you've sent payment, tap below to let us know. We'll confirm it and your download will unlock here automatically — no need to refresh.</p>
+      <div class="confirm-row" id="payConfirmRow">
+        <button class="btn-primary" id="paidBtn" onclick="requestPaymentConfirmation()">I've sent payment via Cash App</button>
+      </div>
+      <div class="pay-pending" id="payPending" style="display:none">Waiting for ATCHÉ Visuals to confirm your payment — keep this page open, this is usually quick.</div>
+      <button class="btn-primary" id="downloadBtn" disabled style="display:none" onclick="downloadSelected()">Download Your Content</button>
+      <div class="delivery-msg" id="deliveryMsg">✓ Content downloaded — thanks for booking ATCHÉ Visuals tonight!</div>
+    </div>
+
+  </div>
+
+  <!-- RECRUIT (always visible) -->
+  <div class="card recruit reveal">
+    <h2 style="margin-bottom:10px">Are you a creative?</h2>
+    <p>ATCHÉ Visuals is part of <strong>ATCHÉ</strong> — a community for creative women in DC nightlife (photographers, dancers, hosts, DJs, stylists, content creators) to get booked, paid on time, and protected. If tonight's shoot is your vibe, we want to meet you.</p>
+    <a class="btn-link" href="circle-application.html">Apply to The Circle</a>
+    <div class="recruit-quick">
+      <p class="recruit-quick-label">Not ready for the full application? Drop your Instagram and we'll reach out.</p>
+      <div class="recruit-quick-row">
+        <input type="text" id="recruitHandle" placeholder="@yourhandle" autocomplete="off">
+        <button class="btn-link" id="recruitBtn" onclick="submitInterest()">Notify Me</button>
+      </div>
+      <div class="recruit-quick-status" id="recruitStatus"></div>
+    </div>
+  </div>
+
+  <div class="av-footer">ATCHÉ VISUALS · Powered by ATCHÉ · Washington, DC</div>
+</div>
+
+<script>
+const SB_URL = 'https://aayigsbmmdolvnicxacs.supabase.co';
+const SB_KEY = 'sb_publishable_ofAZ_64cKZXJefM5nbbt3g_wNOoF5DC';
+const sb = supabase.createClient(SB_URL, SB_KEY);
+const BUCKET = 'visuals';
+const CASHTAG = 'XaveirMSnow';
+
+let session = null;
+let galleryItems = []; // {name, url, type, selected}
+let currentPrice = 5;
+let currentName = 'Quick Shot';
+
+// ---- AMBIENT FX (background glow parallax + drifting gold sparks) ----
+function initBgFx(){
+  const field = document.getElementById('sparkleField');
+  if(field){
+    const n = 14;
+    for(let i=0;i<n;i++){
+      const s = document.createElement('div');
+      s.className = 'spark';
+      const size = 2 + Math.random()*3;
+      s.style.width = size+'px';
+      s.style.height = size+'px';
+      s.style.left = Math.random()*100+'%';
+      s.style.top = (55 + Math.random()*45)+'%';
+      s.style.animationDuration = (10 + Math.random()*10)+'s';
+      s.style.animationDelay = (-Math.random()*20)+'s';
+      field.appendChild(s);
+    }
+  }
+
+  let ticking = false;
+  window.addEventListener('scroll', () => {
+    if(ticking) return;
+    ticking = true;
+    requestAnimationFrame(() => {
+      const y = window.scrollY;
+      document.documentElement.style.setProperty('--py1', (y*0.12)+'px');
+      document.documentElement.style.setProperty('--py2', (-y*0.08)+'px');
+      document.documentElement.style.setProperty('--py3', (y*0.05)+'px');
+      ticking = false;
+    });
+  }, {passive:true});
+}
+
+// ---- SCROLL REVEAL (cards rise + fade into place) ----
+function initReveal(){
+  const els = document.querySelectorAll('.reveal');
+  const check = () => {
+    let allDone = true;
+    els.forEach(el => {
+      if(el.classList.contains('visible')) return;
+      const r = el.getBoundingClientRect();
+      if(r.top < window.innerHeight * 0.92) el.classList.add('visible');
+      else allDone = false;
+    });
+    if(allDone) window.removeEventListener('scroll', check);
+  };
+  check();
+  window.addEventListener('scroll', check, {passive:true});
+}
+
+// ---- BOOT ----
+async function boot(){
+  initBgFx();
+
+  const params = new URLSearchParams(location.search);
+  const code = (params.get('s') || '').toUpperCase().trim();
+
+  document.getElementById('loadingCard').style.display = 'block';
+
+  if(!code){
+    document.getElementById('loadingCard').style.display = 'none';
+    document.getElementById('landingCard').style.display = 'block';
+    initReveal();
+    return;
+  }
+
+  const { data, error } = await sb.from('visuals_sessions').select('*').eq('code', code).maybeSingle();
+
+  if(error || !data){
+    document.getElementById('loadingCard').style.display = 'none';
+    document.getElementById('notFoundCard').style.display = 'block';
+    initReveal();
+    return;
+  }
+
+  session = data;
+  document.getElementById('loadingCard').style.display = 'none';
+  document.getElementById('mainFlow').style.display = 'block';
+  if(session.label){
+    document.getElementById('sessionLabelTag').textContent = session.label;
+  }
+  await loadGallery();
+  updatePayment();
+  initReveal();
+
+  if(session.paid){
+    unlockDownload();
+  } else if(session.payment_requested){
+    document.getElementById('paidBtn').disabled = true;
+    document.getElementById('paidBtn').textContent = 'Waiting for confirmation…';
+    document.getElementById('payPending').style.display = 'block';
+    document.getElementById('payHelp').style.display = 'none';
+    startPaymentPoll();
+  }
+}
+
+// ---- GALLERY ----
+// Each delivered file lives at `${code}/full/<name>` (the clean original).
+// A watermarked, downsized preview lives alongside it at
+// `${code}/preview/<name>.jpg`. The gallery only ever displays the preview;
+// the original is only fetched on download, after payment is confirmed.
+async function loadGallery(){
+  const { data, error } = await sb.storage.from(BUCKET).list(`${session.code}/full`, {limit:200, sortBy:{column:'created_at', order:'desc'}});
+  const grid = document.getElementById('galleryGrid');
+  const empty = document.getElementById('galleryEmpty');
+  const count = document.getElementById('galleryCount');
+
+  if(error || !data || data.length === 0 || (data.length===1 && data[0].name==='.emptyFolderPlaceholder')){
+    grid.style.display = 'none';
+    count.style.display = 'none';
+    empty.style.display = 'block';
+    return;
+  }
+
+  galleryItems = data
+    .filter(f => f.name !== '.emptyFolderPlaceholder')
+    .map(f => {
+      const { data: full } = sb.storage.from(BUCKET).getPublicUrl(`${session.code}/full/${f.name}`);
+      const { data: prev } = sb.storage.from(BUCKET).getPublicUrl(`${session.code}/preview/${f.name}.jpg`);
+      return {
+        name: f.name,
+        fullUrl: full.publicUrl,
+        previewUrl: prev.publicUrl,
+        type: /\.(mp4|mov|webm)$/i.test(f.name) ? 'video' : 'image',
+        selected: false
+      };
+    });
+
+  empty.style.display = 'none';
+  grid.style.display = 'grid';
+  count.style.display = 'block';
+  renderGallery();
+}
+
+function renderGallery(){
+  const grid = document.getElementById('galleryGrid');
+  const count = document.getElementById('galleryCount');
+  grid.innerHTML = '';
+  galleryItems.forEach((item, idx) => {
+    const div = document.createElement('div');
+    div.className = 'gallery-item' + (item.selected ? ' selected' : '');
+    div.style.setProperty('--d', (Math.min(idx, 11) * 0.04) + 's');
+    div.onclick = () => { item.selected = !item.selected; renderGallery(); };
+
+    const img = document.createElement('img');
+    img.src = item.previewUrl;
+    img.loading = 'lazy';
+    img.onerror = () => {
+      img.remove();
+      const ph = document.createElement('div');
+      ph.className = 'gallery-placeholder';
+      ph.textContent = item.type === 'video' ? '🎬' : '📷';
+      div.insertBefore(ph, div.firstChild);
+    };
+    div.appendChild(img);
+
+    if(item.type === 'video'){
+      const tag = document.createElement('div');
+      tag.className = 'gallery-tag';
+      tag.textContent = 'REEL';
+      div.appendChild(tag);
+    }
+
+    const check = document.createElement('div');
+    check.className = 'gallery-check';
+    check.textContent = '✓';
+    div.appendChild(check);
+
+    grid.appendChild(div);
+  });
+
+  const selectedCount = galleryItems.filter(f => f.selected).length;
+  count.innerHTML = `<strong>${selectedCount}</strong> of ${galleryItems.length} selected`;
+}
+
+// ---- PACKAGES ----
+function selectPkg(el){
+  document.querySelectorAll('.pkg').forEach(p => p.classList.remove('active'));
+  el.classList.add('active');
+  currentPrice = parseInt(el.dataset.price, 10);
+  currentName = el.dataset.name;
+  const totalEl = document.getElementById('totalAmt');
+  totalEl.textContent = '$' + currentPrice;
+  totalEl.classList.remove('bump');
+  void totalEl.offsetWidth;
+  totalEl.classList.add('bump');
+  setTimeout(() => totalEl.classList.remove('bump'), 400);
+  updatePayment();
+}
+
+// ---- PAYMENT ----
+function updatePayment(){
+  const cashUrl = `https://cash.app/$${CASHTAG}/${currentPrice}`;
+  document.getElementById('payLink').href = cashUrl;
+  document.getElementById('qrImg').src = `https://api.qrserver.com/v1/create-qr-code/?size=260x260&margin=8&data=${encodeURIComponent(cashUrl)}`;
+}
+
+// ---- CONFIRM & DOWNLOAD ----
+let paymentPollInterval = null;
+
+async function requestPaymentConfirmation(){
+  if(!session) return;
+  const btn = document.getElementById('paidBtn');
+  btn.disabled = true;
+  btn.textContent = 'Letting them know…';
+
+  const { error } = await sb.rpc('request_payment_confirmation', {
+    p_code: session.code,
+    p_package_name: currentName,
+    p_package_price: currentPrice
+  });
+
+  if(error){
+    btn.disabled = false;
+    btn.textContent = "I've sent payment via Cash App";
+    alert("Couldn't send confirmation — try again, or flag down your photographer: " + error.message);
+    return;
+  }
+
+  btn.textContent = 'Waiting for confirmation…';
+  document.getElementById('payPending').style.display = 'block';
+  document.getElementById('payHelp').style.display = 'none';
+  startPaymentPoll();
+}
+
+function startPaymentPoll(){
+  if(paymentPollInterval) return;
+  paymentPollInterval = setInterval(async () => {
+    const { data, error } = await sb.from('visuals_sessions').select('paid').eq('code', session.code).maybeSingle();
+    if(!error && data && data.paid){
+      clearInterval(paymentPollInterval);
+      paymentPollInterval = null;
+      unlockDownload();
+    }
+  }, 4000);
+}
+
+// ---- RECRUIT: QUICK INTEREST ----
+async function submitInterest(){
+  const input = document.getElementById('recruitHandle');
+  const btn = document.getElementById('recruitBtn');
+  const status = document.getElementById('recruitStatus');
+  const handle = input.value.trim();
+  if(!handle){
+    status.textContent = 'Drop an Instagram handle so we can find you.';
+    status.className = 'recruit-quick-status err';
+    return;
+  }
+  btn.disabled = true;
+  status.textContent = '';
+  status.className = 'recruit-quick-status';
+  const codeNote = session && session.code ? ` (via ATCHÉ Visuals, session ${session.code})` : ' (via ATCHÉ Visuals)';
+  const { error } = await sb.from('circle_applications').insert({
+    name: handle,
+    instagram: handle,
+    track: 'circle',
+    status: 'pending',
+    referral: 'ATCHÉ Visuals' + codeNote
+  });
+  if(error){
+    status.textContent = "Couldn't submit right now — try the full application instead.";
+    status.className = 'recruit-quick-status err';
+    btn.disabled = false;
+    return;
+  }
+  status.textContent = "✓ Got it — we'll reach out on Instagram soon.";
+  input.value = '';
+  input.disabled = true;
+  btn.textContent = 'Sent';
+}
+
+function unlockDownload(){
+  document.getElementById('payPending').style.display = 'none';
+  document.getElementById('payConfirmRow').style.display = 'none';
+  document.getElementById('payHelp').style.display = 'none';
+  const btn = document.getElementById('downloadBtn');
+  btn.style.display = 'block';
+  btn.disabled = false;
+  btn.classList.add('unlocked');
+  setTimeout(() => btn.classList.remove('unlocked'), 1150);
+}
+
+async function downloadSelected(){
+  const selected = galleryItems.filter(f => f.selected);
+  const files = selected.length ? selected : galleryItems;
+
+  if(files.length === 0){
+    alert('No content has been uploaded to this gallery yet.');
+    return;
+  }
+
+  if(files.length === 1){
+    const res = await fetch(files[0].fullUrl);
+    const blob = await res.blob();
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = files[0].name || 'atche-visuals-content';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+  } else {
+    const zip = new JSZip();
+    for(const f of files){
+      const res = await fetch(f.fullUrl);
+      const blob = await res.blob();
+      zip.file(f.name, blob);
+    }
+    const blob = await zip.generateAsync({type:'blob'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'ATCHE-Visuals-' + currentName.replace(/\s+/g,'-') + '.zip';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+  }
+
+  document.getElementById('deliveryMsg').classList.add('show');
+}
+
+boot();
+</script>
+</body>
+</html>

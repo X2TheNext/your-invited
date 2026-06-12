@@ -1,0 +1,791 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ATCHÉ VISUALS — Studio</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Inter:wght@200;300;400;500;600;700&display=swap');
+
+:root {
+  --black: #080808;
+  --surface: #111111;
+  --surface2: #181818;
+  --surface3: #242424;
+  --border: #222222;
+  --border2: #2e2e2e;
+  --gold: #C9A84C;
+  --gold-light: #E2C47A;
+  --gold-dim: rgba(201,168,76,0.12);
+  --text: #F2EDE6;
+  --text2: #B0A898;
+  --text3: #6A6258;
+  --sage: #6B9E7A;
+  --sage-dim: rgba(107,158,122,0.15);
+  --rose: #C2697A;
+  --rose-dim: rgba(194,105,122,0.12);
+  --t: 0.2s cubic-bezier(0.4,0,0.2,1);
+}
+
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',sans-serif;background:var(--black);color:var(--text);min-height:100vh;padding:24px;overflow-x:hidden;display:flex;flex-direction:column;align-items:center}
+
+body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");background-size:200px;opacity:0.025;pointer-events:none;z-index:0}
+
+/* ---- AMBIENT BACKGROUND ---- */
+.bg-fx{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+.bg-glow{position:absolute;border-radius:50%;filter:blur(50px);will-change:transform}
+.bg-glow-gold{top:-140px;left:50%;width:560px;height:420px;transform:translate(-50%,var(--py1,0px));background:radial-gradient(ellipse at center, rgba(201,168,76,0.10) 0%, transparent 70%)}
+.bg-glow-rose{bottom:-180px;right:-100px;width:460px;height:460px;transform:translateY(var(--py2,0px));background:radial-gradient(ellipse at center, rgba(194,105,122,0.07) 0%, transparent 70%)}
+.bg-glow-sage{top:40%;left:-160px;width:380px;height:380px;transform:translateY(var(--py3,0px));background:radial-gradient(ellipse at center, rgba(107,158,122,0.06) 0%, transparent 70%)}
+.spark{position:absolute;border-radius:50%;background:var(--gold-light);opacity:0;animation:spark-float linear infinite}
+@keyframes spark-float{0%{opacity:0;transform:translateY(0) scale(0.6)}8%{opacity:0.55}92%{opacity:0.35}100%{opacity:0;transform:translateY(-140px) scale(1)}}
+
+.wrap{max-width:680px;width:100%;position:relative;z-index:1}
+
+/* LOADING */
+#loadingScreen{position:fixed;inset:0;background:var(--black);z-index:200;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px}
+.load-mark{font-family:'Playfair Display',serif;font-size:34px;font-weight:700;color:var(--gold);letter-spacing:8px;animation:pulse 1.4s ease-in-out infinite}
+.load-sub{font-size:10px;color:var(--text3);letter-spacing:3px;text-transform:uppercase}
+@keyframes pulse{0%,100%{opacity:0.4}50%{opacity:1}}
+
+/* LOGIN */
+#loginScreen{width:100%;max-width:400px;margin:0 auto;position:relative;z-index:1}
+.av-logo{text-align:center;margin-bottom:40px}
+.av-wordmark{font-family:'Playfair Display',serif;font-size:38px;font-weight:700;color:var(--gold);letter-spacing:8px;display:block}
+.av-sub{font-family:'Playfair Display',serif;font-size:13px;font-style:italic;color:var(--text2);letter-spacing:3px;margin-top:2px}
+.av-rule{width:48px;height:1px;background:rgba(201,168,76,0.3);margin:16px auto}
+.av-tagline{font-size:10px;color:var(--text3);letter-spacing:4px;text-transform:uppercase}
+
+.login-card{background:var(--surface);border:1px solid var(--border2);border-radius:18px;padding:36px;position:relative;overflow:hidden}
+.login-card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(201,168,76,0.3),transparent)}
+.login-card h2{font-family:'Playfair Display',serif;font-size:20px;font-weight:600;color:var(--text);margin-bottom:6px;text-align:center}
+.login-card p{font-size:12px;color:var(--text3);text-align:center;margin-bottom:28px;letter-spacing:0.3px;line-height:1.6}
+
+.form-group{margin-bottom:14px}
+.form-label{font-size:10px;font-weight:600;color:var(--text3);letter-spacing:1.5px;text-transform:uppercase;display:block;margin-bottom:6px}
+.form-input{width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;padding:11px 14px;color:var(--text);font-size:14px;outline:none;transition:border-color var(--t);font-family:'Inter',sans-serif}
+.form-input:focus{border-color:var(--gold)}
+.form-input::placeholder{color:var(--text3)}
+
+.btn-primary{width:100%;padding:13px;background:var(--gold);color:var(--black);border:none;border-radius:8px;font-size:13px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;cursor:pointer;transition:var(--t)}
+.btn-primary:hover:not(:disabled){background:var(--gold-light)}
+.btn-primary:disabled{opacity:0.4;cursor:not-allowed}
+
+.auth-switch{text-align:center;margin-top:16px;font-size:12px;color:var(--text3)}
+.auth-switch a{color:var(--gold);cursor:pointer;font-weight:500}
+.auth-switch a:hover{text-decoration:underline}
+.auth-err{background:rgba(194,105,122,0.1);border:1px solid rgba(194,105,122,0.3);border-radius:8px;padding:10px 12px;font-size:12px;color:#E8A0AE;margin-bottom:14px;display:none;line-height:1.5}
+.auth-loading{text-align:center;font-size:11px;color:var(--text3);margin-top:10px;display:none;letter-spacing:1px}
+
+/* STUDIO */
+#studioScreen{display:none}
+.av-header{text-align:center;margin-bottom:28px;padding-top:8px}
+.av-header-user{font-size:12px;color:var(--text2);margin-top:8px}
+.av-header-user span{color:var(--gold);font-weight:500}
+
+.card{background:var(--surface);border:1px solid var(--border2);border-radius:18px;padding:26px;position:relative;overflow:hidden;margin-bottom:18px}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(201,168,76,0.3),transparent)}
+.card h2{font-family:'Playfair Display',serif;font-size:18px;font-weight:600;color:var(--text);margin-bottom:4px}
+.card .card-desc{font-size:12px;color:var(--text3);line-height:1.6;margin-bottom:16px}
+.step-tag{display:inline-block;font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--gold);background:var(--gold-dim);border:1px solid rgba(201,168,76,0.3);border-radius:20px;padding:3px 10px;margin-bottom:12px}
+
+/* REVENUE */
+.rev-row{display:flex;gap:16px}
+.rev-box{flex:1;background:var(--surface2);border:1px solid var(--border2);border-radius:12px;padding:16px;text-align:center}
+.rev-num{font-family:'Playfair Display',serif;font-size:28px;font-weight:700;color:var(--gold)}
+.rev-label{font-size:10px;color:var(--text3);letter-spacing:1.5px;text-transform:uppercase;margin-top:4px}
+
+/* NEW SESSION */
+.row{display:flex;gap:10px}
+.row .form-input{flex:1}
+.row .btn-primary{width:auto;padding:11px 20px;white-space:nowrap}
+
+/* ACTIVE SESSION */
+.session-active{display:none}
+.session-code{font-family:'Playfair Display',serif;font-size:32px;font-weight:700;color:var(--gold);letter-spacing:4px;text-align:center;margin-bottom:4px}
+.session-label{font-size:12px;color:var(--text2);text-align:center;margin-bottom:18px}
+.share-box{display:flex;gap:20px;align-items:center;flex-wrap:wrap;margin-bottom:18px}
+.share-qr{width:130px;height:130px;border-radius:10px;border:1px solid var(--border2);background:#fff;flex-shrink:0;overflow:hidden}
+.share-qr img{width:100%;height:100%;display:block}
+.share-info{flex:1;min-width:180px}
+.share-link{font-size:12px;color:var(--text2);background:var(--surface2);border:1px solid var(--border2);border-radius:8px;padding:10px 12px;word-break:break-all;margin-bottom:10px;font-family:monospace}
+.btn-secondary{display:inline-block;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--gold);background:transparent;border:1px solid var(--gold);border-radius:8px;padding:9px 16px;cursor:pointer;transition:var(--t)}
+.btn-secondary:hover{background:var(--gold-dim)}
+
+/* UPLOAD */
+.drop-zone{border:1.5px dashed var(--border2);border-radius:12px;padding:24px 16px;text-align:center;cursor:pointer;transition:var(--t);background:var(--surface2)}
+.drop-zone:hover, .drop-zone.drag{border-color:var(--gold);background:var(--gold-dim)}
+.drop-zone-icon{font-size:24px;margin-bottom:6px;display:block}
+.drop-zone-text{font-size:13px;color:var(--text2);font-weight:500}
+.drop-zone-sub{font-size:11px;color:var(--text3);margin-top:4px}
+#fileInput{display:none}
+
+.thumb-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:14px}
+.thumb{position:relative;border-radius:8px;overflow:hidden;aspect-ratio:1;border:1px solid var(--border2);background:var(--surface2)}
+.thumb img, .thumb video{width:100%;height:100%;object-fit:cover;display:block}
+.thumb-tag{position:absolute;bottom:4px;left:4px;font-size:8px;letter-spacing:1px;text-transform:uppercase;font-weight:700;color:var(--gold-light);background:rgba(8,8,8,0.7);border-radius:4px;padding:1px 5px}
+.upload-status{font-size:11px;color:var(--text3);margin-top:10px;text-align:center;letter-spacing:0.5px}
+
+/* SESSION LIST */
+.sess-item{display:flex;align-items:center;gap:12px;border:1px solid var(--border2);border-radius:10px;padding:12px 14px;margin-bottom:8px;background:var(--surface2);transition:var(--t)}
+.sess-item:hover{border-color:rgba(201,168,76,0.4)}
+.sess-code{font-family:'Playfair Display',serif;font-size:15px;font-weight:700;color:var(--gold);letter-spacing:1px;width:64px;flex-shrink:0}
+.sess-meta{flex:1;min-width:0}
+.sess-label{font-size:12px;color:var(--text);font-weight:500}
+.sess-time{font-size:10px;color:var(--text3);margin-top:2px}
+.sess-badge{font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;border-radius:20px;padding:3px 9px;flex-shrink:0}
+.badge-paid{background:var(--sage-dim);color:#9DC9A8;border:1px solid rgba(107,158,122,0.3)}
+.badge-pending{background:var(--rose-dim);color:#E8A0AE;border:1px solid rgba(194,105,122,0.3)}
+.badge-closed{background:var(--surface3);color:var(--text3);border:1px solid var(--border2)}
+.sess-open{font-size:11px;font-weight:600;color:var(--gold);cursor:pointer;letter-spacing:0.5px;flex-shrink:0}
+.sess-confirm{font-size:11px;font-weight:600;color:#9DC9A8;cursor:pointer;letter-spacing:0.5px;flex-shrink:0;border:1px solid rgba(107,158,122,0.35);border-radius:20px;padding:4px 10px;background:var(--sage-dim)}
+.sess-empty{text-align:center;font-size:12px;color:var(--text3);padding:16px 0;font-style:italic}
+
+/* FOOTER */
+.av-footer{display:flex;align-items:center;justify-content:center;gap:24px;padding:18px 0 4px;font-size:11px;color:var(--text3);letter-spacing:0.5px}
+.av-footer a{color:var(--text3);cursor:pointer;transition:var(--t)}
+.av-footer a:hover{color:var(--gold)}
+
+/* ---- HEADER MOTION ---- */
+@keyframes header-in{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:translateY(0)}}
+.av-header, .av-logo{animation:header-in 0.9s cubic-bezier(.16,1,.3,1) both}
+.av-logo .av-wordmark, .av-header .av-wordmark{
+  background:linear-gradient(100deg, var(--gold) 30%, var(--gold-light) 50%, var(--gold) 70%);
+  background-size:200% auto;
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+  animation:wordmark-shine 9s ease-in-out infinite;
+}
+@keyframes wordmark-shine{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
+.av-rule{width:0 !important;animation:rule-draw 1s 0.35s cubic-bezier(.16,1,.3,1) forwards}
+@keyframes rule-draw{to{width:48px}}
+
+/* ---- SCROLL REVEAL ---- */
+.reveal{opacity:0;transform:translateY(18px);transition:opacity 0.7s cubic-bezier(.16,1,.3,1), transform 0.7s cubic-bezier(.16,1,.3,1)}
+.reveal.visible{opacity:1;transform:translateY(0)}
+
+/* ---- SESSION LIST STAGGER ---- */
+@keyframes item-in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.sess-item{animation:item-in .45s cubic-bezier(.16,1,.3,1) both;animation-delay:var(--d,0s);transition:transform var(--t),border-color var(--t)}
+.sess-item:hover{transform:translateY(-1px);border-color:rgba(201,168,76,0.4)}
+
+/* ---- CONFIRM PAID EMPHASIS ---- */
+@keyframes confirm-pulse{0%,100%{box-shadow:0 0 0 0 rgba(107,158,122,0.45)}50%{box-shadow:0 0 0 5px rgba(107,158,122,0)}}
+.sess-confirm{animation:confirm-pulse 2.2s ease-in-out infinite;transition:var(--t)}
+.sess-confirm:hover{background:rgba(107,158,122,0.28);animation-play-state:paused}
+
+/* ---- BUTTON MICRO-INTERACTIONS ---- */
+.btn-primary:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 6px 18px rgba(201,168,76,0.25)}
+.btn-primary:active:not(:disabled){transform:scale(0.98)}
+.btn-secondary:hover{transform:translateY(-1px)}
+.btn-secondary:active{transform:scale(0.97)}
+
+/* ---- REVENUE COUNT-UP POP ---- */
+.rev-num{transition:transform 0.3s cubic-bezier(.34,1.56,.64,1)}
+.rev-num.bump{transform:scale(1.12)}
+
+/* ---- ACTIVE SESSION CARD ---- */
+.session-active.show{animation:item-in .5s cubic-bezier(.16,1,.3,1) both}
+</style>
+</head>
+<body>
+
+<!-- AMBIENT BACKGROUND -->
+<div class="bg-fx" aria-hidden="true">
+  <div class="bg-glow bg-glow-gold"></div>
+  <div class="bg-glow bg-glow-rose"></div>
+  <div class="bg-glow bg-glow-sage"></div>
+  <div id="sparkleField"></div>
+</div>
+
+<!-- LOADING -->
+<div id="loadingScreen">
+  <div class="load-mark">ATCHÉ</div>
+  <div class="load-sub">Loading Studio…</div>
+</div>
+
+<!-- LOGIN -->
+<div id="loginScreen" style="display:none">
+  <div class="av-logo">
+    <span class="av-wordmark">ATCHÉ VISUALS</span>
+    <div class="av-sub">Studio</div>
+    <div class="av-rule"></div>
+    <div class="av-tagline">Photographer Access · Washington DC</div>
+  </div>
+  <div class="login-card">
+    <h2 id="loginTitle">Welcome Back</h2>
+    <p id="loginSub">Sign in to start tonight's sessions</p>
+    <div class="auth-err" id="authErr"></div>
+    <div class="form-group">
+      <label class="form-label">Email</label>
+      <input class="form-input" type="email" id="loginEmail" placeholder="you@email.com" onkeydown="if(event.key==='Enter')doLogin()">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Password</label>
+      <input class="form-input" type="password" id="loginPass" placeholder="••••••••••" onkeydown="if(event.key==='Enter')doLogin()">
+    </div>
+    <button class="btn-primary" id="loginBtn" onclick="doLogin()">ENTER</button>
+    <div class="auth-loading" id="authLoading">Authenticating…</div>
+    <div class="auth-switch" id="authSwitch">
+      Don't have an account? <a onclick="toggleMode()">Create one</a>
+    </div>
+  </div>
+</div>
+
+<!-- STUDIO -->
+<div id="studioScreen">
+  <div class="wrap">
+    <div class="av-header">
+      <span class="av-wordmark" style="font-size:32px">ATCHÉ VISUALS</span>
+      <div class="av-sub">Studio</div>
+      <div class="av-rule"></div>
+      <div class="av-header-user">Signed in as <span id="userEmail">–</span></div>
+    </div>
+
+    <!-- TONIGHT'S NUMBERS -->
+    <div class="card reveal">
+      <span class="step-tag">Tonight</span>
+      <h2>Sessions &amp; Revenue</h2>
+      <div class="rev-row">
+        <div class="rev-box">
+          <div class="rev-num" id="revTotal">$0</div>
+          <div class="rev-label">Paid Tonight</div>
+        </div>
+        <div class="rev-box">
+          <div class="rev-num" id="revSessions">0</div>
+          <div class="rev-label">Sessions Tonight</div>
+        </div>
+        <div class="rev-box">
+          <div class="rev-num" id="revPending">0</div>
+          <div class="rev-label">Awaiting Payment</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- NEW SESSION -->
+    <div class="card reveal">
+      <span class="step-tag">New Door</span>
+      <h2>Start a client session</h2>
+      <p class="card-desc">One session = one client/group/performer. You upload their shots here; they get a private link + QR to pick, pay, and download on their own phone.</p>
+      <div class="row">
+        <input class="form-input" id="newLabel" type="text" placeholder="Label (e.g. &quot;DJ Booth Reel&quot;, &quot;Table 4&quot;) — optional">
+        <input class="form-input" id="newContact" type="text" placeholder="Their IG handle or phone — optional" style="max-width:200px">
+      </div>
+      <p class="card-desc" style="margin:8px 0 0">Contact lets you follow up if they don't unlock or download tonight — totally optional.</p>
+      <button class="btn-primary" style="width:100%;margin-top:10px" onclick="createSession()">Create Session</button>
+    </div>
+
+    <!-- ACTIVE SESSION -->
+    <div class="card session-active" id="activeCard">
+      <span class="step-tag">Client Door — Open</span>
+      <h2 style="text-align:center;margin-bottom:14px">Hand this to your client</h2>
+      <div class="session-code" id="activeCode">—</div>
+      <div class="session-label" id="activeLabel"></div>
+      <div class="share-box">
+        <div class="share-qr"><img id="shareQr" alt="Session QR code"></div>
+        <div class="share-info">
+          <div class="share-link" id="shareLink">—</div>
+          <button class="btn-secondary" onclick="copyLink()">Copy Link</button>
+          <button class="btn-secondary" onclick="closeSession()" style="margin-left:6px;border-color:var(--text3);color:var(--text3)">Close Session</button>
+        </div>
+      </div>
+      <div class="drop-zone" id="dropZone" onclick="document.getElementById('fileInput').click()">
+        <span class="drop-zone-icon">📷</span>
+        <div class="drop-zone-text">Tap to upload photos or video for this session</div>
+        <div class="drop-zone-sub">Auto-watermarked previews are generated instantly — clean originals unlock when they pay. JPG, PNG, MP4</div>
+      </div>
+      <input type="file" id="fileInput" accept="image/*,video/*" multiple>
+      <div class="thumb-grid" id="thumbGrid"></div>
+      <div class="upload-status" id="uploadStatus"></div>
+    </div>
+
+    <!-- SESSION LIST -->
+    <div class="card reveal">
+      <span class="step-tag">All Sessions</span>
+      <h2>Tonight's doors</h2>
+      <div id="sessList"><div class="sess-empty">No sessions yet — create one above.</div></div>
+    </div>
+
+    <div class="av-footer">
+      <a onclick="window.open('atche-visuals.html','_blank')">↗ Client Door Preview</a>
+      <span style="color:var(--border2)">·</span>
+      <a onclick="doSignOut()">Sign Out</a>
+    </div>
+  </div>
+</div>
+
+<script>
+const SB_URL = 'https://aayigsbmmdolvnicxacs.supabase.co';
+const SB_KEY = 'sb_publishable_ofAZ_64cKZXJefM5nbbt3g_wNOoF5DC';
+const sb = supabase.createClient(SB_URL, SB_KEY);
+const BUCKET = 'visuals';
+
+// ---- WATERMARKED PREVIEWS ----
+// Every upload is stored twice: the original (untouched) goes to `full/`,
+// and an auto-watermarked, downsized preview goes to `preview/`. The client
+// gallery only ever displays the watermarked preview — the clean original
+// unlocks on download once payment is confirmed.
+const WM_TEXT = 'ATCHÉ VISUALS';
+
+async function ensureFonts(){
+  try{
+    await document.fonts.load("700 32px 'Playfair Display'");
+    await document.fonts.load("400 16px 'Playfair Display'");
+  }catch(e){ /* falls back to default serif if fonts aren't ready */ }
+}
+
+function drawWatermark(ctx, w, h){
+  // Diagonal repeating wordmark across the whole frame
+  ctx.save();
+  const tileFont = Math.max(14, Math.round(w * 0.024));
+  ctx.font = `400 ${tileFont}px 'Playfair Display', serif`;
+  ctx.fillStyle = 'rgba(201,168,76,0.16)';
+  ctx.textBaseline = 'middle';
+  ctx.translate(w/2, h/2);
+  ctx.rotate(-Math.PI/8);
+  ctx.translate(-w/2, -h/2);
+  const textW = ctx.measureText(WM_TEXT).width;
+  const gapX = textW + w * 0.14;
+  const gapY = h * 0.16;
+  const span = Math.ceil(Math.sqrt(w*w + h*h));
+  for(let y = -span; y < h + span; y += gapY){
+    for(let x = -span; x < w + span; x += gapX){
+      ctx.fillText(WM_TEXT, x, y);
+    }
+  }
+  ctx.restore();
+
+  // Bottom-right brand mark
+  ctx.save();
+  const pad = Math.round(w * 0.028);
+  const markFont = Math.max(16, Math.round(w * 0.034));
+  ctx.font = `700 ${markFont}px 'Playfair Display', serif`;
+  ctx.fillStyle = 'rgba(242,237,230,0.92)';
+  ctx.textAlign = 'right';
+  ctx.textBaseline = 'bottom';
+  ctx.shadowColor = 'rgba(0,0,0,0.55)';
+  ctx.shadowBlur = Math.round(w * 0.01);
+  ctx.fillText(WM_TEXT, w - pad, h - pad);
+  ctx.restore();
+}
+
+function drawPlayBadge(ctx, w, h){
+  const r = Math.round(Math.min(w,h) * 0.09);
+  const cx = w/2, cy = h/2;
+  ctx.save();
+  ctx.beginPath();
+  ctx.arc(cx, cy, r, 0, Math.PI*2);
+  ctx.fillStyle = 'rgba(8,8,8,0.45)';
+  ctx.fill();
+  ctx.beginPath();
+  const t = r * 0.55;
+  ctx.moveTo(cx - t*0.5, cy - t*0.9);
+  ctx.lineTo(cx - t*0.5, cy + t*0.9);
+  ctx.lineTo(cx + t*0.95, cy);
+  ctx.closePath();
+  ctx.fillStyle = 'rgba(242,237,230,0.95)';
+  ctx.fill();
+  ctx.restore();
+}
+
+function loadImageFromFile(file){
+  return new Promise((resolve, reject) => {
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => { resolve(img); URL.revokeObjectURL(url); };
+    img.onerror = (e) => { URL.revokeObjectURL(url); reject(e); };
+    img.src = url;
+  });
+}
+
+function canvasToBlob(canvas, type, quality){
+  return new Promise((resolve, reject) => canvas.toBlob(b => b ? resolve(b) : reject(new Error('toBlob failed')), type, quality));
+}
+
+function fitDims(w, h, maxDim){
+  if(w > h && w > maxDim) return { width: maxDim, height: Math.round(h * maxDim / w) };
+  if(h >= w && h > maxDim) return { width: Math.round(w * maxDim / h), height: maxDim };
+  return { width: w, height: h };
+}
+
+// Watermarked, downsized preview for a photo
+async function makeImagePreview(file, maxDim = 1280){
+  const img = await loadImageFromFile(file);
+  const { width, height } = fitDims(img.naturalWidth, img.naturalHeight, maxDim);
+  const canvas = document.createElement('canvas');
+  canvas.width = width; canvas.height = height;
+  const ctx = canvas.getContext('2d');
+  ctx.drawImage(img, 0, 0, width, height);
+  await ensureFonts();
+  drawWatermark(ctx, width, height);
+  return canvasToBlob(canvas, 'image/jpeg', 0.82);
+}
+
+// Watermarked poster frame for a video
+async function makeVideoPreview(file, maxDim = 1280){
+  const url = URL.createObjectURL(file);
+  const video = document.createElement('video');
+  video.muted = true;
+  video.playsInline = true;
+  video.preload = 'auto';
+  video.src = url;
+  await new Promise((resolve, reject) => {
+    video.onloadeddata = resolve;
+    video.onerror = reject;
+  });
+  await new Promise(resolve => {
+    video.onseeked = resolve;
+    video.currentTime = Math.min(0.4, (video.duration || 1) / 2);
+  });
+  const { width, height } = fitDims(video.videoWidth, video.videoHeight, maxDim);
+  const canvas = document.createElement('canvas');
+  canvas.width = width; canvas.height = height;
+  const ctx = canvas.getContext('2d');
+  ctx.drawImage(video, 0, 0, width, height);
+  await ensureFonts();
+  drawWatermark(ctx, width, height);
+  drawPlayBadge(ctx, width, height);
+  URL.revokeObjectURL(url);
+  return canvasToBlob(canvas, 'image/jpeg', 0.82);
+}
+
+let isSignup = false;
+let currentUser = null;
+let activeSession = null; // {id, code, label}
+
+// ---- AUTH ----
+function toggleMode() {
+  isSignup = !isSignup;
+  document.getElementById('loginTitle').textContent = isSignup ? 'Create Account' : 'Welcome Back';
+  document.getElementById('loginSub').textContent = isSignup ? 'Set up your ATCHÉ Visuals access' : "Sign in to start tonight's sessions";
+  document.getElementById('loginBtn').textContent = isSignup ? 'CREATE ACCOUNT' : 'ENTER';
+  document.getElementById('authSwitch').innerHTML = isSignup
+    ? 'Already have an account? <a onclick="toggleMode()">Sign in</a>'
+    : "Don't have an account? <a onclick=\"toggleMode()\">Create one</a>";
+  hideErr();
+}
+
+async function doLogin() {
+  const email = document.getElementById('loginEmail').value.trim();
+  const pass  = document.getElementById('loginPass').value;
+  if(!email||!pass){ showErr('Enter your email and password.'); return; }
+  document.getElementById('loginBtn').disabled = true;
+  document.getElementById('authLoading').style.display = 'block';
+  hideErr();
+  const fn = isSignup
+    ? sb.auth.signUp({ email, password: pass })
+    : sb.auth.signInWithPassword({ email, password: pass });
+  const { data, error } = await fn;
+  document.getElementById('loginBtn').disabled = false;
+  document.getElementById('authLoading').style.display = 'none';
+  if(error){ showErr(error.message); return; }
+  if(isSignup && data.user && !data.session){
+    showErr('Account created. Check your email to confirm, then sign in.');
+    return;
+  }
+  if(data.session) showStudio(data.session.user);
+}
+
+async function doSignOut() {
+  await sb.auth.signOut();
+  document.getElementById('studioScreen').style.display = 'none';
+  document.getElementById('loginScreen').style.display = 'block';
+}
+
+function showErr(msg){ const e=document.getElementById('authErr'); e.textContent=msg; e.style.display='block'; }
+function hideErr(){ document.getElementById('authErr').style.display='none'; }
+
+// ---- AMBIENT BACKGROUND FX ----
+function initBgFx(){
+  const field = document.getElementById('sparkleField');
+  if(field && !field.dataset.ready){
+    field.dataset.ready = '1';
+    const n = 14;
+    for(let i=0;i<n;i++){
+      const s = document.createElement('div');
+      s.className = 'spark';
+      const size = 2 + Math.random()*3;
+      s.style.width = size + 'px';
+      s.style.height = size + 'px';
+      s.style.left = Math.random()*100 + '%';
+      s.style.top = Math.random()*100 + '%';
+      s.style.animationDuration = (10 + Math.random()*14) + 's';
+      s.style.animationDelay = (Math.random()*10) + 's';
+      field.appendChild(s);
+    }
+  }
+  if(!window.__bgFxScroll){
+    window.__bgFxScroll = true;
+    let ticking = false;
+    window.addEventListener('scroll', () => {
+      if(ticking) return;
+      ticking = true;
+      requestAnimationFrame(() => {
+        const y = window.scrollY;
+        document.documentElement.style.setProperty('--py1', (y * 0.08) + 'px');
+        document.documentElement.style.setProperty('--py2', (y * -0.05) + 'px');
+        document.documentElement.style.setProperty('--py3', (y * 0.04) + 'px');
+        ticking = false;
+      });
+    });
+  }
+}
+
+// ---- SCROLL REVEAL ----
+function initReveal(){
+  const els = document.querySelectorAll('.reveal');
+  function check(){
+    const vh = window.innerHeight;
+    els.forEach(el => {
+      if(el.classList.contains('visible')) return;
+      const r = el.getBoundingClientRect();
+      if(r.top < vh * 0.92) el.classList.add('visible');
+    });
+  }
+  check();
+  window.addEventListener('scroll', check);
+  window.addEventListener('resize', check);
+}
+
+async function boot() {
+  const { data: { session } } = await sb.auth.getSession();
+  document.getElementById('loadingScreen').style.display = 'none';
+  initBgFx();
+  if(session){ showStudio(session.user); }
+  else { document.getElementById('loginScreen').style.display = 'block'; }
+}
+
+function showStudio(user) {
+  currentUser = user;
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('studioScreen').style.display = 'block';
+  document.getElementById('userEmail').textContent = user.email;
+  loadSessions();
+  initBgFx();
+  initReveal();
+  // Poll so "Confirm Paid" requests from clients show up without a manual refresh.
+  setInterval(loadSessions, 8000);
+}
+
+function esc(str){
+  if(str == null) return '';
+  return String(str).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+function setStat(id, value){
+  const el = document.getElementById(id);
+  const next = String(value);
+  if(el.textContent === next) return;
+  el.textContent = next;
+  el.classList.remove('bump');
+  void el.offsetWidth;
+  el.classList.add('bump');
+  setTimeout(() => el.classList.remove('bump'), 300);
+}
+
+// ---- SESSIONS ----
+function genCode(){
+  const chars = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
+  let c = '';
+  for(let i=0;i<5;i++) c += chars[Math.floor(Math.random()*chars.length)];
+  return c;
+}
+
+function clientLink(code){
+  return location.origin + location.pathname.replace(/atche-visuals-studio\.html$/, 'atche-visuals.html') + '?s=' + code;
+}
+
+async function createSession(){
+  const label = document.getElementById('newLabel').value.trim();
+  const contact = document.getElementById('newContact').value.trim();
+  const code = genCode();
+  const { data, error } = await sb.from('visuals_sessions').insert({
+    code, label, contact, user_id: currentUser.id, status: 'active'
+  }).select().single();
+  if(error){ alert('Could not create session: ' + error.message); return; }
+  document.getElementById('newLabel').value = '';
+  document.getElementById('newContact').value = '';
+  openSession(data);
+  loadSessions();
+}
+
+function openSession(session){
+  activeSession = session;
+  const activeCard = document.getElementById('activeCard');
+  activeCard.style.display = 'block';
+  activeCard.classList.remove('show');
+  void activeCard.offsetWidth;
+  activeCard.classList.add('show');
+  document.getElementById('activeCode').textContent = session.code;
+  document.getElementById('activeLabel').textContent = session.label || '';
+  const link = clientLink(session.code);
+  document.getElementById('shareLink').textContent = link;
+  document.getElementById('shareQr').src = 'https://api.qrserver.com/v1/create-qr-code/?size=200x200&margin=6&data=' + encodeURIComponent(link);
+  document.getElementById('thumbGrid').innerHTML = '';
+  document.getElementById('uploadStatus').textContent = '';
+  loadThumbs();
+  document.getElementById('activeCard').scrollIntoView({behavior:'smooth', block:'start'});
+}
+
+async function closeSession(){
+  if(!activeSession) return;
+  await sb.from('visuals_sessions').update({status:'closed'}).eq('id', activeSession.id);
+  document.getElementById('activeCard').style.display = 'none';
+  activeSession = null;
+  loadSessions();
+}
+
+async function loadSessions(){
+  const { data, error } = await sb.from('visuals_sessions')
+    .select('*').eq('user_id', currentUser.id)
+    .order('created_at', {ascending:false}).limit(50);
+  if(error || !data){ return; }
+
+  const todayStr = new Date().toDateString();
+  const tonight = data.filter(s => new Date(s.created_at).toDateString() === todayStr);
+  const paidTotal = tonight.filter(s=>s.paid).reduce((sum,s)=>sum+(Number(s.package_price)||0),0);
+  const pending = tonight.filter(s=>!s.paid && s.status==='active').length;
+  setStat('revTotal', '$' + paidTotal);
+  setStat('revSessions', tonight.length);
+  setStat('revPending', pending);
+
+  const list = document.getElementById('sessList');
+  if(data.length === 0){
+    list.innerHTML = '<div class="sess-empty">No sessions yet — create one above.</div>';
+    return;
+  }
+  list.innerHTML = '';
+  data.forEach((s, idx) => {
+    const div = document.createElement('div');
+    div.className = 'sess-item';
+    div.style.setProperty('--d', (Math.min(idx, 10) * 0.04) + 's');
+    const time = new Date(s.created_at).toLocaleTimeString([], {hour:'numeric', minute:'2-digit'});
+    let badge, badgeClass;
+    const needsConfirm = s.payment_requested && !s.paid;
+    if(s.status === 'closed'){ badge = 'Closed'; badgeClass = 'badge-closed'; }
+    else if(s.paid){ badge = 'Paid $' + s.package_price; badgeClass = 'badge-paid'; }
+    else if(needsConfirm){ badge = 'Confirm $' + (s.package_price || 0); badgeClass = 'badge-pending'; }
+    else { badge = 'Awaiting'; badgeClass = 'badge-pending'; }
+
+    div.innerHTML = `
+      <div class="sess-code">${esc(s.code)}</div>
+      <div class="sess-meta">
+        <div class="sess-label">${esc(s.label) || '(no label)'}</div>
+        <div class="sess-time">${time}${s.contact ? ' · ' + esc(s.contact) : ''}</div>
+      </div>
+      <div class="sess-badge ${badgeClass}">${badge}</div>
+      ${needsConfirm ? `<div class="sess-confirm" data-id="${s.id}">Confirm Paid</div>` : ''}
+      <div class="sess-open" data-id="${s.id}">Open →</div>
+    `;
+    if(needsConfirm){
+      div.querySelector('.sess-confirm').onclick = (e) => { e.stopPropagation(); markPaid(s); };
+    }
+    div.querySelector('.sess-open').onclick = () => openSession(s);
+    list.appendChild(div);
+  });
+}
+
+// ---- PAYMENT CONFIRMATION ----
+// Clients can only flag "I sent payment" (sets payment_requested via RPC).
+// Only staff, signed in here, can flip `paid` — that's what actually unlocks
+// the client's download.
+async function markPaid(s){
+  const amt = s.package_price ? `$${s.package_price}` : 'this';
+  if(!confirm(`Confirm ${amt} payment received for ${s.code}? This unlocks their download.`)) return;
+  const { error } = await sb.from('visuals_sessions').update({
+    paid: true,
+    paid_at: new Date().toISOString(),
+    payment_requested: false
+  }).eq('id', s.id);
+  if(error){ alert('Error: ' + error.message); return; }
+  loadSessions();
+}
+
+// ---- UPLOAD ----
+const fileInput = document.getElementById('fileInput');
+const dropZone = document.getElementById('dropZone');
+
+fileInput.addEventListener('change', e => handleFiles(e.target.files));
+['dragover','dragleave','drop'].forEach(evt => {
+  dropZone.addEventListener(evt, e => {
+    e.preventDefault();
+    if(evt==='dragover') dropZone.classList.add('drag');
+    else dropZone.classList.remove('drag');
+    if(evt==='drop') handleFiles(e.dataTransfer.files);
+  });
+});
+
+async function handleFiles(fileList){
+  if(!activeSession) return;
+  const files = Array.from(fileList);
+  const status = document.getElementById('uploadStatus');
+  const code = activeSession.code;
+
+  for(let i=0;i<files.length;i++){
+    const file = files[i];
+    const isVideo = file.type.startsWith('video/') || /\.(mp4|mov|webm)$/i.test(file.name);
+    const baseName = `${Date.now()}_${i}_${file.name}`;
+
+    status.textContent = `Processing ${i+1} of ${files.length}…`;
+    let previewBlob = null;
+    try{
+      previewBlob = isVideo ? await makeVideoPreview(file) : await makeImagePreview(file);
+    }catch(e){ previewBlob = null; }
+
+    status.textContent = `Uploading ${i+1} of ${files.length}…`;
+    const { error: e1 } = await sb.storage.from(BUCKET)
+      .upload(`${code}/full/${baseName}`, file, { upsert: true });
+    if(e1){ status.textContent = 'Upload error: ' + e1.message; return; }
+
+    if(previewBlob){
+      const { error: e2 } = await sb.storage.from(BUCKET)
+        .upload(`${code}/preview/${baseName}.jpg`, previewBlob, { upsert: true, contentType: 'image/jpeg' });
+      if(e2){ status.textContent = 'Upload error (preview): ' + e2.message; }
+    }
+  }
+  status.textContent = `${files.length} file(s) uploaded ✓ — watermarked previews ready`;
+  loadThumbs();
+}
+
+async function loadThumbs(){
+  if(!activeSession) return;
+  const code = activeSession.code;
+  const { data, error } = await sb.storage.from(BUCKET).list(`${code}/full`, {limit:200, sortBy:{column:'created_at',order:'desc'}});
+  const grid = document.getElementById('thumbGrid');
+  grid.innerHTML = '';
+  if(error || !data) return;
+  data.forEach(f => {
+    if(f.name === '.emptyFolderPlaceholder') return;
+    const { data: prev } = sb.storage.from(BUCKET).getPublicUrl(`${code}/preview/${f.name}.jpg`);
+    const { data: full } = sb.storage.from(BUCKET).getPublicUrl(`${code}/full/${f.name}`);
+    const isVideo = /\.(mp4|mov|webm)$/i.test(f.name);
+    const div = document.createElement('div');
+    div.className = 'thumb';
+    const img = document.createElement('img');
+    img.src = prev.publicUrl;
+    img.onerror = () => { if(!isVideo) img.src = full.publicUrl; };
+    div.appendChild(img);
+    if(isVideo){
+      const tag = document.createElement('div');
+      tag.className = 'thumb-tag';
+      tag.textContent = 'REEL';
+      div.appendChild(tag);
+    }
+    grid.appendChild(div);
+  });
+}
+
+function copyLink(){
+  if(!activeSession) return;
+  navigator.clipboard.writeText(clientLink(activeSession.code));
+  const btn = event.target;
+  const orig = btn.textContent;
+  btn.textContent = 'Copied ✓';
+  setTimeout(()=>btn.textContent=orig, 1500);
+}
+
+boot();
+</script>
+</body>
+</html>

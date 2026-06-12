@@ -113,6 +113,31 @@ body::after{content:'';position:fixed;top:0;left:50%;transform:translateX(-50%);
 .load-mark{font-family:'Playfair Display',serif;font-size:40px;font-weight:700;color:var(--gold);letter-spacing:8px;animation:pulse 1.4s ease-in-out infinite}
 .load-sub{font-size:10px;color:var(--text3);letter-spacing:3px;text-transform:uppercase}
 @keyframes pulse{0%,100%{opacity:0.4}50%{opacity:1}}
+
+/* ── MOBILE ── */
+@media(max-width:768px){
+  body{padding:16px}
+  .hub-wordmark{font-size:36px;letter-spacing:6px}
+  .hub-header-word{font-size:36px;letter-spacing:6px}
+  .hub-header{margin-bottom:36px}
+  .login-card{padding:24px}
+
+  .app-grid,.app-grid.three{grid-template-columns:1fr;gap:16px;margin-bottom:28px}
+  .app-card{padding:28px 24px}
+  .app-card-icon{font-size:32px;margin-bottom:16px}
+  .app-card-name{font-size:22px}
+
+  .hub-footer{flex-wrap:wrap;gap:14px}
+
+  #setupPanel{padding:20px}
+  .setup-step{gap:12px}
+  .setup-code{font-size:10px}
+  .setup-body div[style*="grid-template-columns:120px"]{grid-template-columns:1fr!important;gap:2px 0!important}
+}
+
+@media(max-width:400px){
+  .hub-wordmark,.hub-header-word{font-size:30px;letter-spacing:4px}
+}
 </style>
 </head>
 <body>

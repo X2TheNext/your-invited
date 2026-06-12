@@ -164,13 +164,62 @@ body{font-family:'Inter',sans-serif;background:var(--black);color:var(--text);di
 .pull-quote{border-left:2px solid var(--gold);padding:16px 24px;margin:32px 0;font-family:'Playfair Display',serif;font-size:18px;font-style:italic;color:var(--text2);line-height:1.6}
 .pull-quote span{display:block;margin-top:8px;font-family:'Inter',sans-serif;font-size:11px;color:var(--text3);font-style:normal;letter-spacing:1px}
 
+/* ── MOBILE NAV ── */
+.menu-toggle{display:none;position:fixed;top:16px;left:16px;z-index:100;width:42px;height:42px;align-items:center;justify-content:center;background:var(--s1);border:1px solid var(--border);border-radius:8px;color:var(--gold);font-size:20px;cursor:pointer}
+.sidebar-backdrop{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:49}
+
+/* ── TABLE SCROLL WRAPPER ── */
+.table-wrap{margin-bottom:32px}
+.table-wrap .data-table{margin-bottom:0}
+
+@media (max-width:880px){
+  body{overflow-x:hidden}
+  .menu-toggle{display:flex}
+  .sidebar{transform:translateX(-100%);transition:transform 0.25s ease;box-shadow:0 0 40px rgba(0,0,0,0.6)}
+  .sidebar.open{transform:translateX(0)}
+  .sidebar-backdrop.show{display:block}
+  .main{margin-left:0;max-width:100vw}
+
+  .hero{padding:90px 24px 60px;min-height:auto}
+  .hero-title{font-size:48px;letter-spacing:10px}
+  .hero-sub{font-size:16px;max-width:100%}
+  .hero-eyebrow{font-size:9px;letter-spacing:3px}
+  .hero-date{position:static;margin-top:32px}
+
+  .section{padding:56px 20px}
+  .sec-title{font-size:28px}
+  .sec-intro{font-size:14px}
+
+  .two-col{grid-template-columns:1fr;gap:24px}
+
+  .corridor{flex-direction:column}
+  .corridor-stop:not(:last-child){border-right:none;border-bottom:1px solid var(--border)}
+
+  .table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;margin:0 -20px 32px;padding:0 20px}
+  .table-wrap .data-table{min-width:640px}
+
+  .sop-step{gap:14px}
+}
+
+@media (max-width:480px){
+  .hero-title{font-size:36px;letter-spacing:6px}
+  .hero-rule{margin:16px auto}
+  .sec-title{font-size:24px}
+  .card,.tier-card,.metric{padding:20px 18px}
+  .corridor-stop{padding:22px 18px}
+}
+
 @media print{.sidebar{display:none}.main{margin-left:0}}
 </style>
 </head>
 <body>
 
+<!-- MOBILE NAV TOGGLE -->
+<button class="menu-toggle" id="menuToggle" aria-label="Toggle navigation">☰</button>
+<div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+
 <!-- SIDEBAR -->
-<nav class="sidebar">
+<nav class="sidebar" id="sidebar">
   <div class="sb-logo">
     <div class="sb-wordmark">ATCHÉ</div>
     <div class="sb-sub">The Playbook</div>
@@ -882,6 +931,35 @@ sections.forEach(s => obs.observe(s));
 
 // Set today's date in hero
 document.querySelector('.hero-date').textContent = new Date().toLocaleDateString('en-US',{month:'long',year:'numeric'}) + ' · Internal Use Only';
+
+// Mobile nav toggle
+const menuToggle = document.getElementById('menuToggle');
+const sidebar = document.getElementById('sidebar');
+const backdrop = document.getElementById('sidebarBackdrop');
+
+function closeSidebar(){
+  sidebar.classList.remove('open');
+  backdrop.classList.remove('show');
+  menuToggle.textContent = '☰';
+}
+function openSidebar(){
+  sidebar.classList.add('open');
+  backdrop.classList.add('show');
+  menuToggle.textContent = '✕';
+}
+menuToggle.addEventListener('click', () => {
+  sidebar.classList.contains('open') ? closeSidebar() : openSidebar();
+});
+backdrop.addEventListener('click', closeSidebar);
+links.forEach(l => l.addEventListener('click', closeSidebar));
+
+// Wrap data tables so they scroll horizontally on small screens
+document.querySelectorAll('.data-table').forEach(table => {
+  const wrap = document.createElement('div');
+  wrap.className = 'table-wrap';
+  table.parentNode.insertBefore(wrap, table);
+  wrap.appendChild(table);
+});
 </script>
 </body>
 </html>

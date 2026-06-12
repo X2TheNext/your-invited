@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ATCHÉ Studio — Creator & Brand Track</title>
+<meta name="description" content="ATCHÉ Studio matches DC creators with paid UGC, brand ambassador, and content opportunities — no follower minimums, real contracts, real pay.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --cream: #FBF6EF;
+    --blush: #F2E2D6;
+    --white: #FFFFFF;
+    --ink: #211D19;
+    --ink-dim: rgba(33,29,25,0.62);
+    --ink-faint: rgba(33,29,25,0.10);
+    --rose: #C0795C;
+    --rose-deep: #A6603F;
+    --rose-dim: rgba(192,121,92,0.14);
+    --gray: rgba(33,29,25,0.32);
+  }
+  *{ margin:0; padding:0; box-sizing:border-box; }
+  html{ scroll-behavior:smooth; }
+  body{
+    font-family:'Inter', sans-serif;
+    background: var(--cream);
+    color: var(--ink);
+    font-weight:300;
+    line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3,h4{ font-family:'Playfair Display', serif; font-weight:500; color: var(--ink); }
+  section{ padding: 88px 24px; max-width: 880px; margin: 0 auto; }
+
+  /* ── HERO ─────────────────────────────────────── */
+  .hero{
+    position:relative;
+    min-height: 100vh;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+    overflow:hidden;
+    background: linear-gradient(180deg, var(--blush) 0%, var(--cream) 70%);
+  }
+  .hero-bg{
+    position:absolute; inset:0;
+    background-image:url('https://d8j0ntlcm91z4.cloudfront.net/user_38UuuwPAyCC1aFyPsNUyccdEuZD/hf_20260605_214449_8770bb13-27c7-4651-9791-9d101ba9d0d2.png');
+    background-size:cover; background-position:center 18%;
+    opacity:0.32;
+    animation: slowZoom 28s ease-in-out infinite alternate;
+  }
+  @keyframes slowZoom{ from{ transform:scale(1); } to{ transform:scale(1.08); } }
+  .hero-overlay{
+    position:absolute; inset:0;
+    background: linear-gradient(180deg, rgba(251,246,239,0.35) 0%, rgba(251,246,239,0.65) 55%, var(--cream) 100%);
+  }
+  .hero-content{ position:relative; z-index:2; padding: 0 24px; }
+  .hero-eyebrow{
+    font-size:11px; letter-spacing:0.4em; text-transform:uppercase;
+    color: var(--rose-deep); font-weight:500; margin-bottom:18px;
+  }
+  .hero-wordmark{
+    font-size: clamp(48px, 12vw, 88px);
+    letter-spacing: 0.04em;
+    margin-bottom: 6px;
+  }
+  .hero-sub{
+    font-size: clamp(13px, 3vw, 16px);
+    letter-spacing: 0.5em;
+    text-transform:uppercase;
+    color: var(--rose);
+    font-weight:500;
+    margin-bottom: 28px;
+  }
+  .hero-tagline{
+    font-size: clamp(16px, 3.4vw, 21px);
+    color: var(--ink-dim);
+    font-weight:300;
+    max-width: 480px;
+    margin: 0 auto 36px;
+    line-height:1.6;
+  }
+  .hero-tagline strong{ color: var(--ink); font-weight:500; }
+  .btn-primary{
+    display:inline-block;
+    background: var(--ink);
+    color: var(--cream);
+    text-decoration:none;
+    padding: 16px 40px;
+    font-size: 11px;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    font-weight:500;
+    border-radius: 2px;
+    transition: background 0.25s ease, transform 0.25s ease;
+  }
+  .btn-primary:hover{ background: var(--rose-deep); transform: translateY(-1px); }
+  .scroll-hint{
+    position:absolute; bottom:28px; left:0; right:0;
+    text-align:center; z-index:2;
+    font-size:10px; letter-spacing:0.35em; text-transform:uppercase;
+    color: var(--gray);
+  }
+
+  /* ── SECTION TYPOGRAPHY ───────────────────────── */
+  .section-label{
+    font-size:11px; letter-spacing:0.35em; text-transform:uppercase;
+    color: var(--rose-deep); font-weight:500; margin-bottom:14px; text-align:center;
+  }
+  h2{
+    font-size: clamp(28px, 6vw, 42px);
+    line-height:1.2;
+    text-align:center;
+    margin-bottom: 20px;
+  }
+  h2 em{ color: var(--rose); font-style:italic; }
+  .lead{
+    font-size:15px; color: var(--ink-dim); font-weight:300;
+    max-width: 580px; margin: 0 auto 40px; text-align:center; line-height:1.8;
+  }
+
+  /* ── OFFER GRID ────────────────────────────────── */
+  .offer-grid{
+    display:grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 28px;
+    margin-top: 48px;
+  }
+  .offer-card{
+    background: var(--white);
+    border-left: 3px solid var(--rose);
+    padding: 28px 26px;
+    border-radius: 4px;
+  }
+  .offer-num{
+    font-family:'Playfair Display', serif;
+    font-size:13px; color: var(--rose);
+    letter-spacing:0.2em; margin-bottom:10px;
+  }
+  .offer-card h3{
+    font-size:18px; margin-bottom:10px; line-height:1.3;
+  }
+  .offer-card p{ font-size:13px; color: var(--ink-dim); line-height:1.7; font-weight:300; }
+
+  /* ── IMAGE BREAK ───────────────────────────────── */
+  .img-break{
+    position:relative; overflow:hidden; max-height:70vh;
+  }
+  .img-break img{
+    width:100%; max-height:70vh; object-fit:cover; display:block;
+  }
+  .img-break .grad{
+    position:absolute; inset:0;
+    background: linear-gradient(to bottom, transparent 40%, var(--cream) 100%);
+  }
+  .img-break .caption{
+    position:absolute; bottom:32px; left:0; right:0; text-align:center;
+  }
+  .img-break .caption p:first-child{
+    font-family:'Playfair Display', serif; font-style:italic;
+    font-size: clamp(20px,5vw,30px); color: var(--ink); margin-bottom:8px;
+  }
+  .img-break .caption p:last-child{
+    font-size:9px; letter-spacing:0.4em; text-transform:uppercase; color: var(--rose-deep); font-weight:500;
+  }
+
+  /* ── REQUIREMENT LIST ──────────────────────────── */
+  .requirement-list{ margin-top:48px; display:flex; flex-direction:column; gap:24px; }
+  .req-item{ display:flex; gap:18px; align-items:flex-start; }
+  .req-icon{
+    flex-shrink:0; width:34px; height:34px; border-radius:50%;
+    background: var(--rose-dim); color: var(--rose-deep);
+    display:flex; align-items:center; justify-content:center; font-size:14px;
+  }
+  .req-item h4{ font-size:15px; margin-bottom:4px; font-family:'Inter',sans-serif; font-weight:500; }
+  .req-item p{ font-size:13px; color: var(--ink-dim); font-weight:300; line-height:1.7; }
+
+  /* ── RULE / QUOTE ──────────────────────────────── */
+  .rule{ width:60px; height:1px; background: var(--rose); margin: 0 auto 32px; }
+
+  /* ── FORM ──────────────────────────────────────── */
+  #apply{ background: var(--blush); }
+  .form-inner{ max-width: 560px; margin: 0 auto; }
+  .form-group{ margin-bottom: 22px; }
+  .form-group label{
+    display:block; font-size:11px; letter-spacing:0.15em; text-transform:uppercase;
+    color: var(--ink-dim); font-weight:500; margin-bottom:8px;
+  }
+  .form-group input,
+  .form-group select,
+  .form-group textarea{
+    width:100%; padding: 13px 14px; font-family:'Inter', sans-serif;
+    font-size:14px; font-weight:300; color: var(--ink);
+    background: var(--white); border: 1px solid var(--ink-faint);
+    border-radius: 3px; outline:none; transition: border-color 0.2s ease;
+  }
+  .form-group input:focus,
+  .form-group select:focus,
+  .form-group textarea:focus{ border-color: var(--rose); }
+  .form-group textarea{ min-height: 110px; resize: vertical; }
+  .checkbox-group{ display:flex; flex-wrap:wrap; gap: 10px 18px; }
+  .check-label{
+    display:flex; align-items:center; gap:8px;
+    font-size:13px; font-weight:300; color: var(--ink-dim);
+    text-transform:none; letter-spacing:normal; cursor:pointer;
+  }
+  .check-label input{ width:auto; accent-color: var(--rose); }
+  .form-note{
+    font-size:11px; color: var(--gray); line-height:1.7; margin: 24px 0; font-weight:300;
+  }
+  .btn-submit{
+    width:100%; background: var(--ink); color: var(--cream);
+    border:none; padding: 17px; font-size:11px; letter-spacing:0.3em;
+    text-transform:uppercase; font-weight:500; border-radius: 3px;
+    cursor:pointer; transition: background 0.25s ease;
+  }
+  .btn-submit:hover{ background: var(--rose-deep); }
+  .btn-submit:disabled{ opacity:0.6; cursor:default; }
+
+  /* ── SUCCESS STATE ─────────────────────────────── */
+  .success-state{ display:none; text-align:center; padding: 60px 0; }
+  .success-state h3{ font-size:28px; margin-bottom:16px; }
+  .success-state p{ font-size:14px; color: var(--ink-dim); font-weight:300; line-height:1.7; }
+  .success-icon{ font-size:36px; margin-bottom:20px; display:block; color: var(--rose); }
+
+  /* ── FOOTER ────────────────────────────────────── */
+  footer{
+    text-align:center; padding: 56px 24px 40px; border-top: 1px solid var(--ink-faint);
+  }
+  .footer-wordmark{
+    font-family:'Playfair Display', serif; font-size:22px; letter-spacing:0.08em;
+    margin-bottom:6px;
+  }
+  .footer-wordmark span{ color: var(--rose); }
+  .footer-sub{ font-size:11px; letter-spacing:0.3em; text-transform:uppercase; color: var(--gray); margin-bottom:18px; }
+  .footer-links{
+    display:flex; justify-content:center; flex-wrap:wrap; gap: 24px;
+    font-size:11px; letter-spacing:0.2em; text-transform:uppercase; color: var(--gray);
+  }
+  .footer-links a{ color: var(--ink-dim); text-decoration:none; }
+  .footer-links a:hover{ color: var(--rose-deep); }
+</style>
+</head>
+<body>
+
+<!-- ── HERO ─────────────────────────────────────── -->
+<section class="hero" style="padding:0; max-width:none;">
+  <div class="hero-bg"></div>
+  <div class="hero-overlay"></div>
+  <div class="hero-content">
+    <p class="hero-eyebrow">Washington DC · Creator &amp; Brand Track</p>
+    <h1 class="hero-wordmark">ATCHÉ</h1>
+    <p class="hero-sub">Studio</p>
+    <p class="hero-tagline">
+      You're already building your image.<br>
+      <strong>Get paid for it — legitimately.</strong>
+    </p>
+    <a href="#apply" class="btn-primary">Apply to Studio</a>
+  </div>
+  <div class="scroll-hint"><span>Keep reading</span></div>
+</section>
+
+<!-- ── THE OFFER ─────────────────────────────────── -->
+<section>
+  <p class="section-label">What Studio Does</p>
+  <h2>Your image,<br><em>working for you.</em></h2>
+  <p class="lead">ATCHÉ Studio connects DC creators, models, and content-makers with brands that pay for real content and real presence — UGC videos, ambassador deals, brand activations, and more. No follower minimums. We negotiate, you create, you keep your usage rights and your rate.</p>
+
+  <div class="offer-grid">
+    <div class="offer-card">
+      <div class="offer-num">01</div>
+      <h3>UGC &amp; Brand Content</h3>
+      <p>Brands pay $100–500 per short video featuring a real person using or reviewing their product. We match you to briefs that fit your style — shoot on your own time, get paid per video.</p>
+    </div>
+    <div class="offer-card">
+      <div class="offer-num">02</div>
+      <h3>Brand Ambassador Programs</h3>
+      <p>Ongoing relationships with skincare, fashion, fitness, and beverage brands — product plus payment. We negotiate the deal and the contract so you don't have to.</p>
+    </div>
+    <div class="offer-card">
+      <div class="offer-num">03</div>
+      <h3>Brand Activations &amp; Local Work</h3>
+      <p>Pop-ups, store openings, product launches, and local commercial work. Daytime, fully legitimate, and pays well.</p>
+    </div>
+    <div class="offer-card">
+      <div class="offer-num">04</div>
+      <h3>Content Days</h3>
+      <p>Recurring group shoots with a professional photographer — walk away with portfolio and social content, on us or at a discounted member rate.</p>
+    </div>
+    <div class="offer-card">
+      <div class="offer-num">05</div>
+      <h3>Personal Brand Consulting</h3>
+      <p>Styling, content direction, and social strategy from people who've built audiences before. Optional, paid, and built around your goals.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ── IMAGE BREAK ───────────────────────────────── -->
+<div class="img-break">
+  <img src="https://d8j0ntlcm91z4.cloudfront.net/user_38UuuwPAyCC1aFyPsNUyccdEuZD/hf_20260605_221237_c434c77a-4484-414f-8eeb-7058ba487f24.png" alt="ATCHÉ Studio" loading="lazy">
+  <div class="grad"></div>
+  <div class="caption">
+    <p>Your content. Your rate. Your name on the contract.</p>
+    <p>ATCHÉ Studio · Washington DC</p>
+  </div>
+</div>
+
+<!-- ── WHO THIS IS FOR ───────────────────────────── -->
+<section>
+  <p class="section-label">Who This Is For</p>
+  <h2>You don't need<br><em>50,000 followers.</em></h2>
+  <p class="lead">You need real presence, a phone camera, and the willingness to show up professionally. Whether you're already getting brand DMs you don't know how to handle, or you've never done a paid collab — Studio is built for you.</p>
+
+  <div class="requirement-list">
+    <div class="req-item">
+      <div class="req-icon"><span>✦</span></div>
+      <div>
+        <h4>Based in DC, Maryland, or Virginia</h4>
+        <p>Most content days and brand activations happen in the DMV. Remote UGC work is open to anyone in the area.</p>
+      </div>
+    </div>
+    <div class="req-item">
+      <div class="req-icon"><span>✦</span></div>
+      <div>
+        <h4>18 or older</h4>
+        <p>All Studio members must be 18+.</p>
+      </div>
+    </div>
+    <div class="req-item">
+      <div class="req-icon"><span>✦</span></div>
+      <div>
+        <h4>Comfortable on camera</h4>
+        <p>UGC and brand content means talking to camera or appearing in photos/video. You don't need experience — you need comfort.</p>
+      </div>
+    </div>
+    <div class="req-item">
+      <div class="req-icon"><span>✦</span></div>
+      <div>
+        <h4>Reliable and professional</h4>
+        <p>Brands are paying for a deliverable on a deadline. Show up, deliver, and get paid on time — that's the deal on both sides.</p>
+      </div>
+    </div>
+    <div class="req-item">
+      <div class="req-icon"><span>✦</span></div>
+      <div>
+        <h4>Open to real contracts</h4>
+        <p>Every brand deal comes with a written agreement covering pay, usage rights, and timelines. We protect you on paper, not just a handshake.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── QUOTE ─────────────────────────────────────── -->
+<section style="text-align:center;">
+  <div class="rule"></div>
+  <p style="font-family:'Playfair Display',serif; font-size: clamp(20px,5vw,28px); font-style:italic; color: var(--ink); line-height:1.5; margin-bottom:20px;">
+    "You've been building an audience and a look for free. Studio is where that finally pays — on a real contract, on your terms."
+  </p>
+  <p style="font-size:10px; letter-spacing:0.35em; text-transform:uppercase; color: var(--rose-deep);">Xavier Snow · Founder · ATCHÉ</p>
+</section>
+
+<!-- ── APPLICATION FORM ──────────────────────────── -->
+<div id="apply">
+  <section>
+    <div class="form-inner">
+      <p class="section-label">Studio Application</p>
+      <h2>Apply to<br><em>ATCHÉ Studio</em></h2>
+      <p class="lead">We review every application personally and reach out within 48 hours about open briefs that fit you.</p>
+
+      <form id="studioForm">
+        <div class="form-group">
+          <label>Full Name</label>
+          <input type="text" name="name" placeholder="Your full name" required>
+        </div>
+
+        <div class="form-group">
+          <label>Instagram Handle</label>
+          <input type="text" name="instagram" placeholder="@yourhandle" required>
+        </div>
+
+        <div class="form-group">
+          <label>Email Address</label>
+          <input type="email" name="email" placeholder="your@email.com" required>
+        </div>
+
+        <div class="form-group">
+          <label>Phone Number</label>
+          <input type="tel" name="phone" placeholder="(202) 000-0000" required>
+        </div>
+
+        <div class="form-group">
+          <label>TikTok Handle (if applicable)</label>
+          <input type="text" name="tiktok" placeholder="@yourhandle">
+        </div>
+
+        <div class="form-group">
+          <label>Approximate Follower Count (across platforms)</label>
+          <select name="followers" required>
+            <option value="" disabled selected>Select range</option>
+            <option>Under 1,000</option>
+            <option>1,000 – 5,000</option>
+            <option>5,000 – 15,000</option>
+            <option>15,000 – 50,000</option>
+            <option>50,000+</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>What kind of work are you interested in? (select all that apply)</label>
+          <div class="checkbox-group">
+            <label class="check-label"><input type="checkbox" name="interest" value="UGC / Brand Content"> UGC / Brand Content</label>
+            <label class="check-label"><input type="checkbox" name="interest" value="Brand Ambassador Programs"> Brand Ambassador</label>
+            <label class="check-label"><input type="checkbox" name="interest" value="Brand Activations / Events"> Brand Activations</label>
+            <label class="check-label"><input type="checkbox" name="interest" value="Content Days / Photoshoots"> Content Days</label>
+            <label class="check-label"><input type="checkbox" name="interest" value="Personal Brand Consulting"> Brand Consulting</label>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Your Content Niche (select all that apply)</label>
+          <div class="checkbox-group">
+            <label class="check-label"><input type="checkbox" name="niche" value="Beauty / Skincare"> Beauty / Skincare</label>
+            <label class="check-label"><input type="checkbox" name="niche" value="Fashion"> Fashion</label>
+            <label class="check-label"><input type="checkbox" name="niche" value="Fitness / Wellness"> Fitness / Wellness</label>
+            <label class="check-label"><input type="checkbox" name="niche" value="Food / Lifestyle"> Food / Lifestyle</label>
+            <label class="check-label"><input type="checkbox" name="niche" value="Travel"> Travel</label>
+            <label class="check-label"><input type="checkbox" name="niche" value="Other"> Other</label>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Your Neighborhood / City</label>
+          <input type="text" name="location" placeholder="e.g. DC, Silver Spring, PG County..." required>
+        </div>
+
+        <div class="form-group">
+          <label>How did you hear about ATCHÉ Studio?</label>
+          <input type="text" name="referral" placeholder="Instagram, a friend, an event...">
+        </div>
+
+        <div class="form-group">
+          <label>Tell us about yourself</label>
+          <textarea name="bio" placeholder="Who are you, what kind of content do you make or want to make, and what are you hoping to get out of Studio?" required></textarea>
+        </div>
+
+        <div class="form-group">
+          <label>Portfolio / Link (optional)</label>
+          <input type="url" name="portfolio" placeholder="Instagram, website, TikTok, or any link to your work">
+        </div>
+
+        <p class="form-note">By submitting this application you confirm you are 18 or older and agree to be contacted by ATCHÉ Studio regarding paid creator and brand opportunities. We do not share your information with third parties.</p>
+
+        <button type="submit" class="btn-submit">Submit My Application</button>
+      </form>
+
+      <div class="success-state" id="successState">
+        <span class="success-icon">✦</span>
+        <h3>Application received.</h3>
+        <p>We review every application personally. If a brief fits you, you'll hear from us within 48 hours at your Instagram. Keep building.</p>
+        <br>
+        <p style="color: var(--rose-deep); font-size:12px; letter-spacing:0.2em; text-transform:uppercase;">— ATCHÉ Studio</p>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- ── FOOTER ────────────────────────────────────── -->
+<footer>
+  <div class="footer-wordmark">ATCHÉ <span>Studio</span></div>
+  <div class="footer-sub">Creator &amp; Brand Track · Washington DC · 2026</div>
+  <div class="footer-links">
+    <a href="https://instagram.com/atcheofficial" target="_blank">@atcheofficial</a>
+    <a href="circle-application.html">More into live events?</a>
+    <a href="mailto:thedigitalmarxman@gmail.com">Contact</a>
+  </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+  const _sb = supabase.createClient(
+    'https://aayigsbmmdolvnicxacs.supabase.co',
+    'sb_publishable_ofAZ_64cKZXJefM5nbbt3g_wNOoF5DC'
+  );
+
+  document.getElementById('studioForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const btn = this.querySelector('.btn-submit');
+    btn.textContent = 'Submitting…';
+    btn.disabled = true;
+
+    const g = id => (this.querySelector(`[name="${id}"]`) || {}).value || '';
+    const interests = [...this.querySelectorAll('[name="interest"]:checked')].map(el => el.value);
+    const niches = [...this.querySelectorAll('[name="niche"]:checked')].map(el => el.value);
+
+    const payload = {
+      name:         g('name'),
+      instagram:    g('instagram'),
+      email:        g('email'),
+      phone:        g('phone'),
+      tiktok:       g('tiktok'),
+      followers:    g('followers'),
+      roles:        interests,
+      interests:    niches,
+      location:     g('location'),
+      availability: '',
+      referral:     g('referral'),
+      bio:          g('bio'),
+      portfolio:    g('portfolio'),
+      track:        'studio',
+      status:       'pending'
+    };
+
+    const { error } = await _sb.from('circle_applications').insert(payload);
+
+    if (error) {
+      console.error('Submission error:', error);
+      btn.textContent = 'Submit My Application';
+      btn.disabled = false;
+      alert('Something went wrong — please try again or DM us on Instagram.');
+      return;
+    }
+
+    this.style.display = 'none';
+    document.getElementById('successState').style.display = 'block';
+    document.getElementById('successState').scrollIntoView({ behavior: 'smooth' });
+  });
+</script>
+</body>
+</html>

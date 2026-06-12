@@ -6,6 +6,9 @@
     { "source": "/venue-crm", "destination": "/venue-crm.html" },
     { "source": "/tracker", "destination": "/model-tracker.html" },
     { "source": "/onboarding", "destination": "/circle-onboarding.html" },
-    { "source": "/apply", "destination": "/circle-application.html" }
+    { "source": "/apply", "destination": "/circle-application.html" },
+    { "source": "/visuals", "destination": "/atche-visuals.html" },
+    { "source": "/visuals-studio", "destination": "/atche-visuals-studio.html" },
+    { "source": "/venues", "destination": "/atche-venues.html" }
   ]
 }

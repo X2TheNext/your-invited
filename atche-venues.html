@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ATCHÉ — Partner With Us</title>
+<meta name="description" content="ATCHÉ partners with DC nightlife venues to bring a built-in community, help close tables, and produce content every night — events, sales support, and content from one partner.">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Inter:wght@200;300;400;500;600;700&display=swap');
+
+:root {
+  --black: #080808;
+  --surface: #111111;
+  --surface2: #181818;
+  --surface3: #242424;
+  --border: #222222;
+  --border2: #2e2e2e;
+  --gold: #C9A84C;
+  --gold-light: #E2C47A;
+  --gold-dim: rgba(201,168,76,0.12);
+  --text: #F2EDE6;
+  --text2: #B0A898;
+  --text3: #6A6258;
+  --sage: #6B9E7A;
+  --sage-dim: rgba(107,158,122,0.15);
+  --rose: #C2697A;
+  --rose-dim: rgba(194,105,122,0.12);
+  --t: 0.25s cubic-bezier(0.4,0,0.2,1);
+}
+
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'Inter',sans-serif;background:var(--black);color:var(--text);overflow-x:hidden;line-height:1.6;-webkit-font-smoothing:antialiased}
+
+body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");background-size:200px;opacity:0.025;pointer-events:none;z-index:0}
+
+/* ---- AMBIENT BACKGROUND ---- */
+.bg-fx{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+.bg-glow{position:absolute;border-radius:50%;filter:blur(60px);will-change:transform}
+.bg-glow-gold{top:-160px;left:50%;width:620px;height:460px;transform:translate(-50%,var(--py1,0px));background:radial-gradient(ellipse at center, rgba(201,168,76,0.12) 0%, transparent 70%)}
+.bg-glow-rose{top:55%;right:-140px;width:480px;height:480px;transform:translateY(var(--py2,0px));background:radial-gradient(ellipse at center, rgba(194,105,122,0.07) 0%, transparent 70%)}
+.bg-glow-sage{top:90%;left:-160px;width:400px;height:400px;transform:translateY(var(--py3,0px));background:radial-gradient(ellipse at center, rgba(107,158,122,0.06) 0%, transparent 70%)}
+.spark{position:absolute;border-radius:50%;background:var(--gold-light);opacity:0;animation:spark-float linear infinite}
+@keyframes spark-float{0%{opacity:0;transform:translateY(0) scale(0.6)}8%{opacity:0.55}92%{opacity:0.35}100%{opacity:0;transform:translateY(-160px) scale(1)}}
+
+h1,h2,h3,h4{font-family:'Playfair Display',serif;font-weight:600;color:var(--text)}
+
+/* ---- HERO ---- */
+.hero{position:relative;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;overflow:hidden}
+.hero-bg{position:absolute;inset:0;background-image:url('https://d8j0ntlcm91z4.cloudfront.net/user_38UuuwPAyCC1aFyPsNUyccdEuZD/hf_20260612_205731_ece4b1b7-9271-4c78-8d01-30ed8af22933.png');background-size:cover;background-position:center 38%;opacity:0.55;animation:slowZoom 28s ease-in-out infinite alternate}
+@keyframes slowZoom{from{transform:scale(1)}to{transform:scale(1.08)}}
+.hero-overlay{position:absolute;inset:0;background:linear-gradient(180deg, rgba(8,8,8,0.25) 0%, rgba(8,8,8,0.55) 45%, var(--black) 100%)}
+.hero-content{position:relative;z-index:2;padding:0 24px;max-width:720px}
+.hero-eyebrow{font-size:11px;letter-spacing:0.4em;text-transform:uppercase;color:var(--gold);font-weight:700;margin-bottom:22px;opacity:0;animation:fade-up 0.8s 0.1s cubic-bezier(.16,1,.3,1) forwards}
+.hero-wordmark{
+  font-size:clamp(46px,12vw,98px);font-weight:700;letter-spacing:0.05em;margin-bottom:10px;
+  background:linear-gradient(100deg, var(--gold) 30%, var(--gold-light) 50%, var(--gold) 70%);
+  background-size:200% auto;-webkit-background-clip:text;background-clip:text;color:transparent;
+  animation:wordmark-shine 9s ease-in-out infinite, fade-up 0.9s 0.2s cubic-bezier(.16,1,.3,1) forwards;
+  opacity:0;
+}
+@keyframes wordmark-shine{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
+.hero-sub{font-style:italic;font-size:clamp(14px,3vw,20px);color:var(--text2);letter-spacing:0.18em;margin-bottom:30px;opacity:0;animation:fade-up 0.9s 0.35s cubic-bezier(.16,1,.3,1) forwards}
+.hero-tagline{font-family:'Inter',sans-serif;font-weight:300;font-size:clamp(15px,3vw,18px);color:var(--text2);max-width:540px;margin:0 auto 40px;line-height:1.8;opacity:0;animation:fade-up 0.9s 0.5s cubic-bezier(.16,1,.3,1) forwards}
+.hero-tagline strong{color:var(--gold-light);font-weight:600}
+@keyframes fade-up{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+
+.btn-primary{display:inline-block;background:var(--gold);color:var(--black);text-decoration:none;padding:16px 38px;font-size:11px;letter-spacing:0.3em;text-transform:uppercase;font-weight:700;border:none;border-radius:8px;cursor:pointer;transition:var(--t);opacity:0;animation:fade-up 0.9s 0.65s cubic-bezier(.16,1,.3,1) forwards}
+.btn-primary:hover{background:var(--gold-light);transform:translateY(-2px);box-shadow:0 8px 24px rgba(201,168,76,0.3)}
+.btn-primary:active{transform:scale(0.98)}
+
+.scroll-hint{position:absolute;bottom:30px;left:0;right:0;text-align:center;z-index:2;font-size:10px;letter-spacing:0.35em;text-transform:uppercase;color:var(--text3);animation:bob 2.4s ease-in-out infinite}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(6px)}}
+
+/* ---- SECTIONS ---- */
+section{padding:110px 24px;max-width:1080px;margin:0 auto;position:relative;z-index:1}
+.section-label{font-size:11px;letter-spacing:0.4em;text-transform:uppercase;color:var(--gold);text-align:center;margin-bottom:18px;font-weight:700}
+h2{font-size:clamp(30px,6vw,48px);text-align:center;margin-bottom:24px;line-height:1.25}
+h2 em{color:var(--gold);font-style:italic}
+.lead{font-family:'Inter',sans-serif;font-weight:300;font-size:clamp(15px,2.6vw,18px);color:var(--text2);text-align:center;max-width:660px;margin:0 auto 50px;line-height:1.85}
+.lead strong{color:var(--text);font-weight:500}
+.center{text-align:center}
+
+/* ---- SCROLL REVEAL ---- */
+.reveal{opacity:0;transform:translateY(22px);transition:opacity 0.8s cubic-bezier(.16,1,.3,1), transform 0.8s cubic-bezier(.16,1,.3,1)}
+.reveal.visible{opacity:1;transform:translateY(0)}
+
+/* ---- PROBLEM / PSYCHOLOGY ---- */
+.problem-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:24px;margin-top:50px}
+.problem-card{background:var(--surface);border:1px solid var(--border2);border-radius:16px;padding:28px;position:relative;overflow:hidden;transition:var(--t)}
+.problem-card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(201,168,76,0.35),transparent)}
+.problem-card:hover{transform:translateY(-4px);border-color:rgba(201,168,76,0.35)}
+.problem-icon{font-size:24px;color:var(--gold);margin-bottom:14px}
+.problem-card h3{font-size:18px;margin-bottom:10px;font-weight:600}
+.problem-card p{font-size:13.5px;color:var(--text2);line-height:1.8}
+
+/* ---- PILLARS ---- */
+.pillar{display:flex;gap:54px;align-items:center;margin-bottom:100px}
+.pillar:last-child{margin-bottom:0}
+.pillar:nth-child(even){flex-direction:row-reverse}
+.pillar-img{flex:0 0 38%;border-radius:18px;overflow:hidden;position:relative;aspect-ratio:3/4;border:1px solid var(--border2)}
+.pillar-img::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg, transparent 50%, rgba(8,8,8,0.5) 100%);pointer-events:none}
+.pillar-img img{width:100%;height:100%;object-fit:cover;display:block;transition:transform 0.8s cubic-bezier(.16,1,.3,1)}
+.pillar:hover .pillar-img img{transform:scale(1.05)}
+.pillar-content{flex:1}
+.pillar-tag{display:inline-block;font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--gold);background:var(--gold-dim);border:1px solid rgba(201,168,76,0.3);border-radius:20px;padding:4px 12px;margin-bottom:16px}
+.pillar-content h3{font-size:clamp(24px,4vw,34px);margin-bottom:16px;line-height:1.3}
+.pillar-content p{font-size:15px;color:var(--text2);line-height:1.85;font-weight:300;max-width:440px}
+.pillar-content p strong{color:var(--text);font-weight:600}
+
+/* ---- FLYWHEEL ---- */
+.flywheel{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:14px;margin:60px 0 30px}
+.fw-node{background:var(--surface);border:1px solid var(--border2);border-radius:14px;padding:24px 20px;text-align:center;width:200px;position:relative;transition:var(--t)}
+.fw-node::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(201,168,76,0.35),transparent)}
+.fw-node:hover{transform:translateY(-4px);border-color:rgba(201,168,76,0.35)}
+.fw-num{font-size:11px;letter-spacing:3px;color:var(--gold);font-weight:700;margin-bottom:10px}
+.fw-node h4{font-size:15px;margin-bottom:8px;font-weight:600}
+.fw-node p{font-size:12.5px;color:var(--text3);line-height:1.6}
+.fw-arrow{color:var(--gold);font-size:22px;flex-shrink:0}
+.fw-loop{text-align:center;margin-top:18px;font-size:12px;letter-spacing:2px;text-transform:uppercase;color:var(--text3)}
+.fw-loop span{display:inline-block;color:var(--gold);font-size:18px;animation:spin 5s linear infinite;margin-right:8px;vertical-align:middle}
+@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+@media (max-width:760px){.fw-arrow{transform:rotate(90deg)}}
+
+/* ---- GEO STRIP ---- */
+.geo-strip{display:flex;flex-wrap:wrap;justify-content:center;gap:14px;margin-top:40px}
+.geo-pill{background:var(--surface2);border:1px solid var(--border2);border-radius:30px;padding:10px 22px;font-size:12px;letter-spacing:1.5px;text-transform:uppercase;color:var(--text2);transition:var(--t)}
+.geo-pill:hover{border-color:rgba(201,168,76,0.4);color:var(--gold-light)}
+.geo-pill.lead-pill{border-color:rgba(201,168,76,0.45);color:var(--gold-light);background:var(--gold-dim)}
+
+/* ---- TIERS ---- */
+.pilot-card{background:linear-gradient(135deg, var(--surface) 0%, var(--surface2) 100%);border:1px solid rgba(201,168,76,0.35);border-radius:18px;padding:36px;text-align:center;max-width:640px;margin:0 auto 50px;position:relative;overflow:hidden}
+.pilot-card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(201,168,76,0.5),transparent)}
+.pilot-tag{display:inline-block;font-size:10px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--black);background:var(--gold);border-radius:20px;padding:5px 14px;margin-bottom:18px}
+.pilot-card h3{font-size:24px;margin-bottom:12px}
+.pilot-card p{font-size:14px;color:var(--text2);line-height:1.8;max-width:480px;margin:0 auto}
+
+.tiers{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:22px}
+.tier-card{background:var(--surface);border:1px solid var(--border2);border-radius:16px;padding:30px 26px;text-align:center;position:relative;overflow:hidden;transition:var(--t)}
+.tier-card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(201,168,76,0.35),transparent)}
+.tier-card:hover{transform:translateY(-4px);border-color:rgba(201,168,76,0.35)}
+.tier-card.featured{border-color:rgba(201,168,76,0.5);background:linear-gradient(135deg, var(--surface) 0%, var(--surface2) 100%)}
+.tier-badge{position:absolute;top:14px;right:14px;font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--gold);background:var(--gold-dim);border:1px solid rgba(201,168,76,0.3);border-radius:20px;padding:3px 9px}
+.tier-name{font-size:17px;margin-bottom:8px;letter-spacing:0.5px}
+.tier-price{font-size:36px;color:var(--gold);font-weight:700;margin-bottom:2px}
+.tier-price span{font-size:13px;color:var(--text3);font-weight:400;font-family:'Inter',sans-serif}
+.tier-period{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:2px;margin-bottom:22px}
+.tier-list{list-style:none;text-align:left;font-size:13px;color:var(--text2);line-height:2.1;font-weight:300}
+.tier-list li{padding-left:18px;position:relative}
+.tier-list li::before{content:'✦';color:var(--gold);position:absolute;left:0;font-size:11px;top:6px}
+
+/* ---- FORM ---- */
+.form-card{background:var(--surface);border:1px solid var(--border2);border-radius:18px;padding:42px;max-width:560px;margin:0 auto;position:relative;overflow:hidden}
+.form-card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(201,168,76,0.35),transparent)}
+.form-row{display:flex;gap:14px}
+.form-row .form-group{flex:1}
+.form-group{margin-bottom:16px}
+.form-label{font-size:10px;font-weight:600;color:var(--text3);letter-spacing:1.5px;text-transform:uppercase;display:block;margin-bottom:7px}
+.form-input,.form-textarea,.form-select{width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;padding:12px 14px;color:var(--text);font-size:14px;outline:none;transition:border-color var(--t);font-family:'Inter',sans-serif}
+.form-input:focus,.form-textarea:focus,.form-select:focus{border-color:var(--gold)}
+.form-input::placeholder,.form-textarea::placeholder{color:var(--text3)}
+.form-textarea{resize:vertical;min-height:90px}
+.form-select{appearance:none;cursor:pointer}
+.form-note{font-size:12px;color:var(--text3);text-align:center;margin-top:16px;line-height:1.7}
+.form-status{font-size:13px;text-align:center;margin-top:16px;min-height:18px}
+.form-status.ok{color:#9DC9A8}
+.form-status.err{color:#E8A0AE}
+.btn-submit{width:100%}
+
+/* ---- FOOTER ---- */
+.av-footer{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:24px;padding:50px 24px 40px;font-size:11px;color:var(--text3);letter-spacing:1px}
+.av-footer a{color:var(--text2);text-decoration:none;transition:var(--t)}
+.av-footer a:hover{color:var(--gold)}
+.av-footer-mark{font-family:'Playfair Display',serif;color:var(--gold);letter-spacing:3px;font-size:13px}
+
+@media (max-width:760px){
+  .pillar, .pillar:nth-child(even){flex-direction:column}
+  .pillar-img{flex:none;width:100%;max-width:340px;margin:0 auto}
+  section{padding:80px 20px}
+  .form-row{flex-direction:column}
+  .form-row .form-group{margin-bottom:16px}
+}
+</style>
+</head>
+<body>
+
+<!-- AMBIENT BACKGROUND -->
+<div class="bg-fx" aria-hidden="true">
+  <div class="bg-glow bg-glow-gold"></div>
+  <div class="bg-glow bg-glow-rose"></div>
+  <div class="bg-glow bg-glow-sage"></div>
+  <div id="sparkleField"></div>
+</div>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-overlay"></div>
+  <div class="hero-content">
+    <div class="hero-eyebrow">For Venue &amp; Brand Partners</div>
+    <h1 class="hero-wordmark">ATCHÉ</h1>
+    <div class="hero-sub">your room, but it never goes cold</div>
+    <p class="hero-tagline">We bring the women who fill a room and keep it filled — <strong>events that build a real crowd</strong>, <strong>hosts who help close the table</strong>, and <strong>content that makes the night live on</strong>. No one else is doing all three.</p>
+    <a href="#partner" class="btn-primary">Become a Partner</a>
+  </div>
+  <div class="scroll-hint">Scroll</div>
+</div>
+
+<!-- THE PROBLEM -->
+<section>
+  <div class="section-label reveal">The Reality</div>
+  <h2 class="reveal">A packed room on Friday<br>doesn't guarantee one on <em>Tuesday</em></h2>
+  <p class="lead reveal">Most venues are stuck buying attention one night at a time — a promoter, a flyer, a hope. The crowd shows up once and you never see them again. <strong>ATCHÉ is different: we don't rent you a crowd, we build you a community</strong> that comes back because the women in it feel seen, paid, and protected — and they bring their friends.</p>
+  <div class="problem-grid">
+    <div class="problem-card reveal">
+      <div class="problem-icon">◐</div>
+      <h3>Retention, not just turnout</h3>
+      <p>The Circle — our network of DC creatives, hosts, and creators — gives you a recurring core of regulars who anchor the room, night after night.</p>
+    </div>
+    <div class="problem-card reveal">
+      <div class="problem-icon">◑</div>
+      <h3>A name behind the room</h3>
+      <p>ATCHÉ becomes part of your venue's identity — a recognizable, trusted brand that guests associate with a better night, not just another bar.</p>
+    </div>
+    <div class="problem-card reveal">
+      <div class="problem-icon">◒</div>
+      <h3>Proof, not promises</h3>
+      <p>Every partnership starts with a free pilot night. You see the lift in the room and the content it produces before you spend a dollar.</p>
+    </div>
+  </div>
+</section>
+
+<!-- THREE PILLARS -->
+<section>
+  <div class="section-label reveal">What We Bring</div>
+  <h2 class="reveal">One partner. <em>Three</em> things<br>nobody else combines</h2>
+  <p class="lead reveal">Most venues juggle a promoter for events, a separate hustle for bottle sales, and a content creator (if they're lucky) — three relationships, three invoices, three different vibes. ATCHÉ is all three, working together, under one partnership.</p>
+
+  <div class="pillar reveal">
+    <div class="pillar-img">
+      <img src="https://d8j0ntlcm91z4.cloudfront.net/user_38UuuwPAyCC1aFyPsNUyccdEuZD/hf_20260612_205732_4d605e1c-b5cb-46c6-8c59-e9e8684684c3.png" alt="Circle members celebrating at a partner venue" loading="lazy">
+    </div>
+    <div class="pillar-content">
+      <span class="pillar-tag">01 · Events</span>
+      <h3>We curate the room, not just rent it</h3>
+      <p>ATCHÉ plans and hosts recurring nights built around The Circle — DC's network of stylish, connected creative women. They show up, they bring people, and the room takes on a life of its own. <strong>This is the foundation everything else is built on.</strong></p>
+    </div>
+  </div>
+
+  <div class="pillar reveal">
+    <div class="pillar-img">
+      <img src="https://d8j0ntlcm91z4.cloudfront.net/user_38UuuwPAyCC1aFyPsNUyccdEuZD/hf_20260612_205733_6e46ba92-26e6-498c-9ab7-eba778e2be00.png" alt="VIP bottle service table at a partner venue" loading="lazy">
+    </div>
+    <div class="pillar-content">
+      <span class="pillar-tag">02 · Table Sales</span>
+      <h3>Circle hosts help close the table</h3>
+      <p>Our hosts don't just attend — they work the room. They sit with groups, build the energy, and help turn a hesitant table into a bottle sale. <strong>More tables closed, more often, without you adding staff.</strong></p>
+    </div>
+  </div>
+
+  <div class="pillar reveal">
+    <div class="pillar-img">
+      <img src="https://d8j0ntlcm91z4.cloudfront.net/user_38UuuwPAyCC1aFyPsNUyccdEuZD/hf_20260612_205734_d1a1d914-bd15-4d56-ae4e-07af1c33609b.png" alt="ATCHÉ Visuals content creator at a partner venue" loading="lazy">
+    </div>
+    <div class="pillar-content">
+      <span class="pillar-tag">03 · Content</span>
+      <h3>Every night becomes next week's marketing</h3>
+      <p>ATCHÉ Visuals shoots photos and Reels on-site — for your venue's page and for ours. <strong>Your best nights stop disappearing</strong> the moment the lights come up, and start filling next week's room before it even opens.</p>
+    </div>
+  </div>
+</section>
+
+<!-- FLYWHEEL -->
+<section>
+  <div class="section-label reveal">How It Compounds</div>
+  <h2 class="reveal">The more we run it,<br>the better it <em>gets</em></h2>
+  <p class="lead reveal">This isn't a one-off activation — it's a loop. Each part feeds the next, and your venue becomes more valuable to be in every cycle.</p>
+  <div class="flywheel">
+    <div class="fw-node reveal">
+      <div class="fw-num">01</div>
+      <h4>ATCHÉ Shows Up</h4>
+      <p>Circle hosts &amp; creators fill the room and work the floor</p>
+    </div>
+    <div class="fw-arrow reveal">→</div>
+    <div class="fw-node reveal">
+      <div class="fw-num">02</div>
+      <h4>Content Gets Made</h4>
+      <p>Every night becomes photos &amp; Reels for both brands</p>
+    </div>
+    <div class="fw-arrow reveal">→</div>
+    <div class="fw-node reveal">
+      <div class="fw-num">03</div>
+      <h4>The Circle Grows</h4>
+      <p>Content attracts more women to ATCHÉ — and to your room</p>
+    </div>
+    <div class="fw-arrow reveal">→</div>
+    <div class="fw-node reveal">
+      <div class="fw-num">04</div>
+      <h4>Partnership Deepens</h4>
+      <p>More nights, more hosts, more reach — for both of us</p>
+    </div>
+  </div>
+  <div class="fw-loop reveal"><span>↻</span>and the cycle repeats — every night makes the next one bigger</div>
+</section>
+
+<!-- GEOGRAPHY -->
+<section>
+  <div class="section-label reveal">Where We Start</div>
+  <h2 class="reveal">Built for rooms that are<br>already <em>busy</em></h2>
+  <p class="lead reveal">We're starting where the foot traffic already is — high-volume DC nightlife corridors where the flywheel spins fastest. If your venue is in one of these areas, you're exactly who we're looking for first.</p>
+  <div class="geo-strip">
+    <div class="geo-pill lead-pill reveal">U Street</div>
+    <div class="geo-pill lead-pill reveal">Adams Morgan</div>
+    <div class="geo-pill reveal">Shaw</div>
+    <div class="geo-pill reveal">Navy Yard</div>
+    <div class="geo-pill reveal">H Street</div>
+    <div class="geo-pill reveal">Howard / LeDroit Park</div>
+  </div>
+</section>
+
+<!-- PARTNERSHIP TIERS -->
+<section>
+  <div class="section-label reveal">The Path</div>
+  <h2 class="reveal">From one free night<br>to a real <em>partnership</em></h2>
+  <p class="lead reveal">Every relationship starts the same way — no contract, no cost, no risk.</p>
+
+  <div class="pilot-card reveal">
+    <div class="pilot-tag">Stage 0 · Free</div>
+    <h3>The Pilot Night</h3>
+    <p>ATCHÉ brings 3-4 Circle women and a photographer for one night, completely free. You get a livelier room and a full content package — photos and Reels — to keep and post. We get to show you exactly what this partnership looks like in practice. No ask, no pressure.</p>
+  </div>
+
+  <div class="tiers">
+    <div class="tier-card reveal">
+      <div class="tier-name">Starter</div>
+      <div class="tier-price">$800<span>/mo</span></div>
+      <div class="tier-period">Stage 1</div>
+      <ul class="tier-list">
+        <li>Monthly content package — photos &amp; Reels</li>
+        <li>Circle presence on 1 recurring night</li>
+        <li>Perks &amp; access for Circle members</li>
+      </ul>
+    </div>
+    <div class="tier-card featured reveal">
+      <div class="tier-badge">Most Common</div>
+      <div class="tier-name">Standard</div>
+      <div class="tier-price">$1,800<span>/mo</span></div>
+      <div class="tier-period">Stage 2</div>
+      <ul class="tier-list">
+        <li>Weekly content — photos &amp; Reels</li>
+        <li>Circle presence on 2 recurring nights</li>
+        <li>Hosts supporting table &amp; bottle sales</li>
+        <li>Perks &amp; access for Circle members</li>
+      </ul>
+    </div>
+    <div class="tier-card reveal">
+      <div class="tier-name">Full Partnership</div>
+      <div class="tier-price">$3,500<span>/mo</span></div>
+      <div class="tier-period">Stage 3</div>
+      <ul class="tier-list">
+        <li>Dedicated content cadence, multi-night</li>
+        <li>Circle hosts embedded for sales support</li>
+        <li>Co-branded events &amp; activations</li>
+        <li>Priority placement for The Circle</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- INQUIRY FORM -->
+<section id="partner">
+  <div class="section-label reveal">Let's Talk</div>
+  <h2 class="reveal">Bring ATCHÉ<br>to your <em>room</em></h2>
+  <p class="lead reveal">Tell us about your venue and we'll follow up to set up a free pilot night.</p>
+
+  <div class="form-card reveal">
+    <form id="venueForm">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Venue Name</label>
+          <input type="text" class="form-input" id="vName" placeholder="e.g. Spicy Water" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Neighborhood</label>
+          <select class="form-select" id="vNeighborhood">
+            <option value="">Select…</option>
+            <option>U Street</option>
+            <option>Adams Morgan</option>
+            <option>Shaw</option>
+            <option>Navy Yard</option>
+            <option>H Street</option>
+            <option>Howard / LeDroit Park</option>
+            <option>Other DC</option>
+            <option>Outside DC</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Your Name</label>
+          <input type="text" class="form-input" id="vContactName" placeholder="Owner / manager / booking contact" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Email or Phone</label>
+          <input type="text" class="form-input" id="vContact" placeholder="Best way to reach you" required>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Anything we should know?</label>
+        <textarea class="form-textarea" id="vMessage" placeholder="Nights you're trying to grow, current promoters, what you're looking for — optional"></textarea>
+      </div>
+      <button type="submit" class="btn-primary btn-submit" id="vSubmitBtn" style="opacity:1;animation:none">Request a Pilot Night</button>
+      <div class="form-status" id="vStatus"></div>
+    </form>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="av-footer">
+  <span class="av-footer-mark">ATCHÉ</span>
+  <a href="https://instagram.com/atcheofficial" target="_blank">@atcheofficial</a>
+  <a href="mailto:thedigitalmarxman@gmail.com">Contact</a>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const sb = supabase.createClient(
+  'https://aayigsbmmdolvnicxacs.supabase.co',
+  'sb_publishable_ofAZ_64cKZXJefM5nbbt3g_wNOoF5DC'
+);
+
+// ---- AMBIENT BACKGROUND FX ----
+function initBgFx(){
+  const field = document.getElementById('sparkleField');
+  if(field && !field.dataset.ready){
+    field.dataset.ready = '1';
+    const n = 16;
+    for(let i=0;i<n;i++){
+      const s = document.createElement('div');
+      s.className = 'spark';
+      const size = 2 + Math.random()*3;
+      s.style.width = size + 'px';
+      s.style.height = size + 'px';
+      s.style.left = Math.random()*100 + '%';
+      s.style.top = Math.random()*100 + '%';
+      s.style.animationDuration = (10 + Math.random()*14) + 's';
+      s.style.animationDelay = (Math.random()*10) + 's';
+      field.appendChild(s);
+    }
+  }
+  let ticking = false;
+  window.addEventListener('scroll', () => {
+    if(ticking) return;
+    ticking = true;
+    requestAnimationFrame(() => {
+      const y = window.scrollY;
+      document.documentElement.style.setProperty('--py1', (y * 0.06) + 'px');
+      document.documentElement.style.setProperty('--py2', (y * -0.04) + 'px');
+      document.documentElement.style.setProperty('--py3', (y * 0.03) + 'px');
+      ticking = false;
+    });
+  });
+}
+
+// ---- SCROLL REVEAL ----
+function initReveal(){
+  const els = document.querySelectorAll('.reveal');
+  function check(){
+    const vh = window.innerHeight;
+    els.forEach((el, i) => {
+      if(el.classList.contains('visible')) return;
+      const r = el.getBoundingClientRect();
+      if(r.top < vh * 0.9){
+        setTimeout(() => el.classList.add('visible'), (i % 6) * 60);
+      }
+    });
+  }
+  check();
+  window.addEventListener('scroll', check);
+  window.addEventListener('resize', check);
+}
+
+// ---- INQUIRY FORM ----
+document.getElementById('venueForm').addEventListener('submit', async function(e){
+  e.preventDefault();
+  const btn = document.getElementById('vSubmitBtn');
+  const status = document.getElementById('vStatus');
+  const venue = document.getElementById('vName').value.trim();
+  const neighborhood = document.getElementById('vNeighborhood').value;
+  const contactName = document.getElementById('vContactName').value.trim();
+  const contact = document.getElementById('vContact').value.trim();
+  const message = document.getElementById('vMessage').value.trim();
+
+  if(!venue || !contactName || !contact){
+    status.textContent = 'Please fill in the required fields.';
+    status.className = 'form-status err';
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = 'Sending…';
+  status.textContent = '';
+  status.className = 'form-status';
+
+  const { error } = await sb.from('venue_inquiries').insert({
+    venue_name: venue,
+    neighborhood: neighborhood || null,
+    contact_name: contactName,
+    contact: contact,
+    message: message || null,
+    status: 'new'
+  });
+
+  if(error){
+    status.textContent = "Something went wrong — email us directly at thedigitalmarxman@gmail.com.";
+    status.className = 'form-status err';
+    btn.disabled = false;
+    btn.textContent = 'Request a Pilot Night';
+    return;
+  }
+
+  status.textContent = "✓ Got it — we'll be in touch to set up your pilot night.";
+  status.className = 'form-status ok';
+  btn.textContent = 'Sent';
+  this.querySelectorAll('input, textarea, select').forEach(el => el.disabled = true);
+});
+
+initBgFx();
+initReveal();
+</script>
+</body>
+</html>

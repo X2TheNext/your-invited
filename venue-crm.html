@@ -280,6 +280,84 @@ tr:hover td{background:var(--gold-glow);color:var(--text)}
 .tag-hbcu{background:rgba(139,107,177,0.12);color:var(--violet-light)}
 .tag-livemusic{background:rgba(194,105,122,0.1);color:var(--rose-light)}
 .tag-patio{background:rgba(107,158,122,0.1);color:var(--sage-light)}
+
+/* ── MOBILE NAV ── */
+.mobile-nav{display:none}
+
+@media(max-width:768px){
+  body{overflow-x:hidden}
+  .sidebar{display:none}
+  .app{flex-direction:column;height:100dvh;height:-webkit-fill-available;overflow:hidden}
+  .main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-height:0}
+  .content{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;padding-bottom:calc(72px + env(safe-area-inset-bottom,8px))}
+  .view{padding:14px;min-height:0;display:none}
+  .view.active{display:block}
+
+  .mobile-nav{
+    display:flex;position:fixed;bottom:0;left:0;right:0;
+    background:var(--surface);border-top:1px solid var(--border);
+    z-index:50;padding:6px 0 env(safe-area-inset-bottom,10px);
+  }
+  .mob-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 2px;cursor:pointer;color:var(--text3);font-size:9px;font-weight:500;letter-spacing:0.5px;text-transform:uppercase;transition:var(--t);-webkit-tap-highlight-color:transparent;user-select:none}
+  .mob-item .mi{font-size:20px;line-height:1}
+  .mob-item.active{color:var(--gold)}
+  .mob-add{color:var(--gold)!important}
+  .mob-add .mi{font-size:26px;font-weight:300}
+
+  /* topbar */
+  .topbar{padding:10px 14px;flex-shrink:0}
+  .topbar-title{font-size:15px}
+  .topbar-sub{font-size:10px}
+  .search-box{display:none}
+  .topbar-right .icon-btn{display:none}
+
+  /* stats */
+  .stats-row{grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px}
+  .stat-card{padding:12px}
+  .stat-card-val{font-size:26px}
+
+  /* dashboard */
+  .dash-grid{grid-template-columns:1fr;gap:12px}
+
+  /* directory */
+  .grid{grid-template-columns:1fr}
+  .card-body{padding:12px}
+  .filter-bar{gap:6px}
+  .filter-chip{font-size:10px;padding:4px 10px}
+
+  /* kanban */
+  .kanban{padding:2px 0 10px;min-height:calc(100dvh - 160px);align-items:flex-start}
+  .kanban-col{min-width:75vw;max-width:75vw}
+
+  /* rankings */
+  .rank-bar-wrap{display:none}
+  .rank-score-val{font-size:18px}
+  .rank-icon{width:36px;height:36px;font-size:16px}
+  .rank-num{font-size:20px;min-width:28px}
+
+  /* table */
+  table{min-width:760px}
+
+  /* modals — slide up sheet */
+  .modal-overlay{padding:0;align-items:flex-end;padding-bottom:env(safe-area-inset-bottom,0px)}
+  .modal{border-radius:20px 20px 0 0;max-width:100%;width:100%;margin:0;max-height:94dvh;display:flex;flex-direction:column}
+  .modal-hero{height:auto;flex-shrink:0;flex-wrap:wrap}
+  .modal-tabs{overflow-x:auto;-webkit-overflow-scrolling:touch;white-space:nowrap;flex-shrink:0}
+  .modal-tabs::-webkit-scrollbar{display:none}
+  .modal-tab{padding:10px 12px;font-size:11px}
+  .modal-body{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch}
+
+  /* forms */
+  .form-row{grid-template-columns:1fr}
+  .form-btns{position:sticky;bottom:0;background:var(--surface);padding:12px 0 0}
+  .info-grid{grid-template-columns:1fr}
+}
+
+@media(max-width:400px){
+  .mob-item{font-size:8px}
+  .mob-item .mi{font-size:18px}
+  .stats-row{gap:6px}
+}
 </style>
 </head>
 <body>
@@ -418,6 +496,28 @@ tr:hover td{background:var(--gold-glow);color:var(--text)}
   </div>
 </div>
 </div>
+
+<!-- MOBILE BOTTOM NAV -->
+<nav class="mobile-nav" id="mobileNav">
+  <div class="mob-item active" onclick="mobNav('dashboard',this)" data-view="dashboard">
+    <span class="mi">◈</span><span>Home</span>
+  </div>
+  <div class="mob-item" onclick="mobNav('directory',this)" data-view="directory">
+    <span class="mi">⊞</span><span>Venues</span>
+  </div>
+  <div class="mob-item" onclick="mobNav('rankings',this)" data-view="rankings">
+    <span class="mi">◎</span><span>Rank</span>
+  </div>
+  <div class="mob-item" onclick="mobNav('pipeline',this)" data-view="pipeline">
+    <span class="mi">⬦</span><span>Pipeline</span>
+  </div>
+  <div class="mob-item" onclick="mobNav('table',this)" data-view="table">
+    <span class="mi">≡</span><span>Table</span>
+  </div>
+  <div class="mob-item mob-add" onclick="openAddModal()">
+    <span class="mi">+</span><span>Add</span>
+  </div>
+</nav>
 
 <!-- VENUE DETAIL MODAL -->
 <div class="modal-overlay" id="venueModal">
@@ -983,11 +1083,16 @@ function showView(id, el) {
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
   document.getElementById('view-'+id).classList.add('active');
   if(el) el.classList.add('active');
+  document.querySelectorAll('.mob-item').forEach(m=>m.classList.toggle('active', m.dataset.view===id));
   const titles={dashboard:'Dashboard',directory:'Venue Directory',rankings:'Rankings',pipeline:'Pipeline',table:'Table View'};
   const subs={dashboard:'ATCHÉ Venue Intelligence',directory:'All venues in CRM',rankings:'Composite ATCHÉ Score ranking',pipeline:'Partnership pipeline stages',table:'Full data view'};
   document.getElementById('topbar-title').textContent = titles[id]||id;
   document.getElementById('topbar-sub').textContent = subs[id]||'';
   renderAll();
+}
+function mobNav(id, el) {
+  const navItem = document.querySelector(`.nav-item[onclick*="showView('${id}'"]`);
+  showView(id, navItem);
 }
 function filterDir(status, el) {
   filterStatus=status;
