@@ -24,18 +24,25 @@
     background:linear-gradient(90deg,var(--gold),var(--gold-bright) 45%,#fff6df 50%,var(--gold-bright) 55%,var(--gold));background-size:200% 100%;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;animation:shimmer 6s linear infinite}
   @keyframes shimmer{to{background-position:-200% 0}}
 
-  /* HERO */
-  .hero{position:relative;min-height:94vh;display:flex;flex-direction:column;justify-content:flex-start;overflow:hidden;text-align:center;padding:0;background:radial-gradient(900px 520px at 50% 28%,rgba(31,92,77,.5),transparent 60%),radial-gradient(760px 380px at 50% 122%,rgba(201,162,75,.32),transparent 62%),linear-gradient(160deg,#0a0a0b,#15101c 58%,#0a0a0b)}
-  .hero .bg{position:absolute;inset:0;background-color:#0a0a0b;background-size:cover;background-position:center top;z-index:0;animation:slowZoom 20s ease-in-out infinite alternate}
-  @keyframes slowZoom{to{transform:scale(1.08)}}
-  .hero .scrim{position:absolute;inset:0;z-index:1;background:linear-gradient(180deg,rgba(10,10,11,.62) 0%,rgba(10,10,11,.28) 40%,rgba(10,10,11,.20) 58%,rgba(10,10,11,.86) 84%,var(--black) 100%),radial-gradient(700px 360px at 50% 116%,rgba(201,162,75,.28),transparent 62%)}
-  .hero .inner .wordmark,.hero .inner h1,.hero .inner p{text-shadow:0 4px 30px rgba(0,0,0,.85),0 2px 10px rgba(0,0,0,.7)}
-  .hero .inner{position:relative;z-index:2;padding:0 22px}
-  .hero .wordmark{font-family:'Playfair Display';font-weight:700;letter-spacing:.5em;color:var(--gold-bright);font-size:18px;padding-left:.5em;padding-top:54px;display:inline-block}
-  .hero h1{font-size:clamp(38px,11vw,60px);font-weight:800;line-height:1.02;letter-spacing:-.01em;margin-top:18px;text-shadow:0 4px 40px rgba(0,0,0,.5)}
+  /* HERO — split: text top, photo locked to bottom half */
+  .hero{position:relative;min-height:100svh;display:flex;flex-direction:column;overflow:hidden;text-align:center;background:radial-gradient(900px 520px at 50% 6%,rgba(31,92,77,.45),transparent 60%),linear-gradient(180deg,#0a0a0b,#15101c 52%,#0a0a0b)}
+  .hero-top{flex:0 0 auto;padding:60px 22px 20px;position:relative;z-index:2}
+  .hero .wordmark{font-family:'Playfair Display';font-weight:700;letter-spacing:.5em;color:var(--gold-bright);font-size:17px;padding-left:.5em;display:inline-block}
+  .hero .phonetic{font-size:11px;letter-spacing:.32em;text-transform:uppercase;color:var(--muted);margin-top:7px}
+  .hero h1{font-size:clamp(36px,9.5vw,58px);font-weight:800;line-height:1.02;letter-spacing:-.01em;margin-top:16px}
   .hero h1 em{font-style:italic;font-weight:500;color:var(--gold-bright)}
-  .hero p{font-size:17px;color:#ece5d8;margin-top:16px;text-shadow:0 2px 18px rgba(0,0,0,.6)}
-  .hero .chev{margin-top:30px;font-size:13px;letter-spacing:.2em;color:var(--gold-bright);text-transform:uppercase}
+  .hero p{font-size:16.5px;color:#ece5d8;margin:14px auto 0;max-width:520px}
+  .hero .chev{margin-top:20px;font-size:12px;letter-spacing:.2em;color:var(--gold-bright);text-transform:uppercase}
+  /* ticker */
+  .ticker{position:relative;z-index:2;overflow:hidden;border-top:1px solid var(--line);border-bottom:1px solid var(--line);background:rgba(201,162,75,.06);padding:12px 0;margin-top:20px}
+  .ticker-track{display:inline-flex;white-space:nowrap;will-change:transform;animation:ticker 24s linear infinite}
+  .ticker span{font-family:'Inter';font-weight:600;font-size:12.5px;letter-spacing:.22em;text-transform:uppercase;color:var(--gold-bright)}
+  @keyframes ticker{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+  /* bottom photo */
+  .hero-img{position:relative;flex:1 1 auto;min-height:48vh;z-index:1;overflow:hidden}
+  .hero-img img{width:100%;height:100%;object-fit:cover;object-position:center 26%;display:block;animation:slowZoom 22s ease-in-out infinite alternate}
+  .hero-img::before{content:"";position:absolute;left:0;right:0;top:0;height:90px;background:linear-gradient(180deg,#0a0a0b,transparent);z-index:2}
+  @keyframes slowZoom{to{transform:scale(1.07)}}
 
   section{padding:52px 0;border-bottom:1px solid var(--line-soft)}
   h2{font-size:clamp(24px,6vw,32px);font-weight:700;line-height:1.14;letter-spacing:-.3px;margin-bottom:8px}
@@ -99,14 +106,20 @@
 <body>
 
 <header class="hero">
-  <div class="bg" style="background-image:url('https://d8j0ntlcm91z4.cloudfront.net/user_38UuuwPAyCC1aFyPsNUyccdEuZD/hf_20260616_020127_041a8ae0-2f75-4cd2-b168-c878126508ba_min.webp')"></div>
-  <div class="scrim"></div>
-  <div class="inner wrap">
+  <div class="hero-top">
     <div class="wordmark">ATCHÉ</div>
+    <div class="phonetic">ah&nbsp;·&nbsp;SHAY</div>
     <h1>You&rsquo;re invited<br>to <em>shoot with us.</em></h1>
     <p>Everything you need to know about the Spicy Water shoot — in one place.</p>
     <div class="chev">↓ scroll for details</div>
   </div>
+  <div class="ticker">
+    <div class="ticker-track">
+      <span>&nbsp;Now Casting&nbsp;&nbsp;✦&nbsp;&nbsp;June 24&nbsp;&nbsp;✦&nbsp;&nbsp;Spicy Water&nbsp;&nbsp;✦&nbsp;&nbsp;Washington DC&nbsp;&nbsp;✦&nbsp;&nbsp;Models&nbsp;&nbsp;✦&nbsp;&nbsp;Creators&nbsp;&nbsp;✦&nbsp;&nbsp;It-Girls&nbsp;&nbsp;✦&nbsp;&nbsp;$50 + Food &amp; Drink&nbsp;&nbsp;✦&nbsp;&nbsp;</span>
+      <span>&nbsp;Now Casting&nbsp;&nbsp;✦&nbsp;&nbsp;June 24&nbsp;&nbsp;✦&nbsp;&nbsp;Spicy Water&nbsp;&nbsp;✦&nbsp;&nbsp;Washington DC&nbsp;&nbsp;✦&nbsp;&nbsp;Models&nbsp;&nbsp;✦&nbsp;&nbsp;Creators&nbsp;&nbsp;✦&nbsp;&nbsp;It-Girls&nbsp;&nbsp;✦&nbsp;&nbsp;$50 + Food &amp; Drink&nbsp;&nbsp;✦&nbsp;&nbsp;</span>
+    </div>
+  </div>
+  <div class="hero-img"><img src="img/sw-hero.jpg" alt="Women enjoying the spread at Spicy Water"></div>
 </header>
 
 <section>
@@ -158,8 +171,10 @@
     <h2>This is the energy.</h2>
     <p class="lead">Warm, editorial, jewel-toned. Picture yourself in it.</p>
     <div class="vibe">
-      <figure><img loading="lazy" src="https://d8j0ntlcm91z4.cloudfront.net/user_38UuuwPAyCC1aFyPsNUyccdEuZD/hf_20260614_134145_477e6191-15a3-4f76-9a16-37af35cb5dc7_min.webp" alt="Woman in velvet booth, candlelight"></figure>
-      <figure><img loading="lazy" src="https://d8j0ntlcm91z4.cloudfront.net/user_38UuuwPAyCC1aFyPsNUyccdEuZD/hf_20260615_104547_5048bc95-3544-4ada-8fc6-5496e9af97a7_min.webp" alt="Three women laughing in a warm lounge"></figure>
+      <figure><img loading="lazy" src="img/sw-food1.jpg" alt="African food spread — jollof, suya, plantain"></figure>
+      <figure><img loading="lazy" src="img/sw-food2.jpg" alt="Plantain skillet and cocktail"></figure>
+      <figure><img loading="lazy" src="img/sw-cocktail.jpg" alt="Woman with a cocktail, golden light"></figure>
+      <figure><img loading="lazy" src="img/sw-photographer.jpg" alt="ATCHÉ photographer with camera"></figure>
     </div>
   </div>
 </section>
