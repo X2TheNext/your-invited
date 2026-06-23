@@ -241,6 +241,26 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--gold);outline-offse
 .sess-overflow-item.danger{color:var(--rose)}
 .sess-overflow-item.danger:hover{background:rgba(194,105,122,0.12);color:#E8A0AE}
 
+/* ---- OVERFLOW MENU Z-INDEX FIX ---- */
+/* Boost the row above siblings when its menu is open — works with
+   overflow:visible on #sessListCard so the dropdown clears the card below. */
+.sess-item.menu-open{position:relative;z-index:100}
+
+/* ---- WATERMARK MODE SELECTOR ---- */
+.wm-section{margin-bottom:14px}
+.wm-section-label{font-size:10px;font-weight:600;color:var(--text3);letter-spacing:1.5px;text-transform:uppercase;display:block;margin-bottom:8px}
+.wm-mode-row{display:flex;gap:6px;flex-wrap:wrap}
+.wm-mode-btn{flex:1;min-width:80px;padding:8px 10px;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;color:var(--text2);font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;cursor:pointer;transition:var(--t);text-align:center;font-family:'Inter',sans-serif}
+.wm-mode-btn:hover{border-color:rgba(201,168,76,0.3);color:var(--text)}
+.wm-mode-btn.active{background:var(--gold-dim);border-color:rgba(201,168,76,0.5);color:var(--gold)}
+.wm-venue-row{margin-top:8px;display:flex;gap:8px;flex-direction:column}
+.wm-venue-select,.wm-venue-input{width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;color:var(--text);font-size:13px;padding:10px 12px;font-family:'Inter',sans-serif;outline:none;transition:border-color var(--t);-webkit-appearance:none}
+.wm-venue-select:focus,.wm-venue-input:focus{border-color:var(--gold)}
+.wm-venue-input::placeholder{color:var(--text3)}
+.btn-social{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:12px;background:transparent;border:1px solid rgba(201,168,76,0.35);border-radius:8px;color:var(--gold);font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;cursor:pointer;transition:var(--t);font-family:'Inter',sans-serif;margin-top:10px}
+.btn-social:hover:not(:disabled){background:var(--gold-dim);border-color:rgba(201,168,76,0.55)}
+.btn-social:disabled{opacity:0.45;cursor:not-allowed}
+
 /* ---- SEND FEEDBACK REQUEST ---- */
 /* Pilot-feedback nudge for anyone who hasn't paid yet — same muted shape as
    Mark Paid, just a different accent on hover so it doesn't look urgent. */
@@ -410,6 +430,31 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--gold);outline-offse
           <button class="btn-secondary" id="notifyBtn" onclick="notifyClient()" style="margin-left:6px" aria-label="Notify Client">📩 Notify Client</button>
         </div>
       </div>
+      <!-- WATERMARK MODE -->
+      <div class="wm-section">
+        <span class="wm-section-label">Watermark Mode</span>
+        <div class="wm-mode-row">
+          <button class="wm-mode-btn active" id="wmBtnAtche" onclick="setWmMode('atche',this)">ATCHÉ Only</button>
+          <button class="wm-mode-btn" id="wmBtnVenue" onclick="setWmMode('venue',this)">Venue Co-Brand</button>
+          <button class="wm-mode-btn" id="wmBtnSocial" onclick="setWmMode('social',this)">Social Share</button>
+        </div>
+        <div class="wm-venue-row" id="wmVenueRow" style="display:none">
+          <select class="wm-venue-select" id="wmVenueSelect" onchange="onVenueSelect(this)">
+            <option value="">— Select venue —</option>
+            <option value="Haven">Haven</option>
+            <option value="Decades">Decades</option>
+            <option value="Josephine">Josephine</option>
+            <option value="Café Citron">Café Citron</option>
+            <option value="Algiers">Algiers</option>
+            <option value="Karma">Karma</option>
+            <option value="U Street Music Hall">U Street Music Hall</option>
+            <option value="custom">Custom…</option>
+          </select>
+          <input class="wm-venue-input" id="wmVenueCustom" type="text" placeholder="Type venue name…" style="display:none" oninput="currentVenueName=this.value.trim()">
+        </div>
+        <button class="btn-social" id="sendSocialBtn" onclick="sendSocialVersion()" title="Generate a clean editorial version of the latest photo — for women who didn't pay, in exchange for a post + follow">↗ Send Social Version</button>
+      </div>
+
       <div class="drop-zone" id="dropZone" onclick="document.getElementById('fileInput').click()">
         <span class="drop-zone-icon">📷</span>
         <div class="drop-zone-text">Tap to upload</div>
@@ -431,7 +476,7 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--gold);outline-offse
     </div>
 
     <!-- SESSION LIST -->
-    <div class="card reveal">
+    <div class="card reveal" id="sessListCard" style="overflow:visible">
       <span class="step-tag">All Sessions</span>
       <h2>Tonight's doors</h2>
       <div id="sessList"><div class="sess-empty">No sessions yet — create one above.</div></div>
@@ -519,6 +564,9 @@ document.addEventListener('DOMContentLoaded', () => {
       m.classList.remove('open');
       const btn = m.previousElementSibling;
       if(btn) btn.setAttribute('aria-expanded','false');
+      // Remove z-index boost on the parent row
+      const row = m.closest('.sess-item');
+      if(row) row.classList.remove('menu-open');
     });
   });
 });
@@ -540,15 +588,50 @@ function showToast(msg, type = ''){
 // unlocks on download once payment is confirmed.
 const WM_TEXT = 'ATCHÉ VISUALS';
 
+// ---- WATERMARK MODE STATE ----
+let currentWmMode = 'atche'; // 'atche' | 'venue' | 'social'
+let currentVenueName = '';
+
+function setWmMode(mode, btn){
+  currentWmMode = mode;
+  document.querySelectorAll('.wm-mode-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  const venueRow = document.getElementById('wmVenueRow');
+  venueRow.style.display = (mode === 'venue' || mode === 'social') ? 'flex' : 'none';
+}
+
+function onVenueSelect(sel){
+  const custom = document.getElementById('wmVenueCustom');
+  if(sel.value === 'custom'){
+    custom.style.display = 'block';
+    currentVenueName = custom.value.trim();
+  } else {
+    custom.style.display = 'none';
+    currentVenueName = sel.value;
+  }
+}
+
+function getVenueName(){
+  const sel = document.getElementById('wmVenueSelect');
+  if(!sel) return '';
+  if(sel.value === 'custom'){
+    const c = document.getElementById('wmVenueCustom');
+    return (c && c.value.trim()) || 'Venue';
+  }
+  return sel.value || '';
+}
+
 async function ensureFonts(){
   try{
     await document.fonts.load("700 32px 'Playfair Display'");
     await document.fonts.load("400 16px 'Playfair Display'");
-  }catch(e){ /* falls back to default serif if fonts aren't ready */ }
+    await document.fonts.load("600 14px 'Inter'");
+  }catch(e){ /* falls back to default if fonts aren't ready */ }
 }
 
-function drawWatermark(ctx, w, h){
-  // Diagonal repeating wordmark across the whole frame
+// Diagonal repeating watermark — accepts optional override text for co-brand
+function drawWatermark(ctx, w, h, overrideText){
+  const WM = overrideText || WM_TEXT;
   ctx.save();
   const tileFont = Math.max(18, Math.round(w * 0.034));
   ctx.font = `700 ${tileFont}px 'Playfair Display', serif`;
@@ -559,14 +642,14 @@ function drawWatermark(ctx, w, h){
   ctx.translate(w/2, h/2);
   ctx.rotate(-Math.PI/8);
   ctx.translate(-w/2, -h/2);
-  const textW = ctx.measureText(WM_TEXT).width;
+  const textW = ctx.measureText(WM).width;
   const gapX = textW + w * 0.14;
   const gapY = h * 0.16;
   const span = Math.ceil(Math.sqrt(w*w + h*h));
   for(let y = -span; y < h + span; y += gapY){
     for(let x = -span; x < w + span; x += gapX){
-      ctx.strokeText(WM_TEXT, x, y);
-      ctx.fillText(WM_TEXT, x, y);
+      ctx.strokeText(WM, x, y);
+      ctx.fillText(WM, x, y);
     }
   }
   ctx.restore();
@@ -586,6 +669,104 @@ function drawWatermark(ctx, w, h){
   ctx.textBaseline = 'bottom';
   ctx.fillText(WM_TEXT, w - pad - pillPadX, h - pad - pillPadY*0.6);
   ctx.restore();
+}
+
+// Venue co-brand: diagonal tile uses "VENUE × ATCHÉ VISUALS"
+function drawVenueWatermark(ctx, w, h, venueName){
+  const coText = venueName ? venueName.toUpperCase() + ' × ' + WM_TEXT : WM_TEXT;
+  drawWatermark(ctx, w, h, coText);
+}
+
+// Social share: editorial bottom banner only — no diagonal tile.
+// Looks like a magazine credit, not a defensive watermark.
+// Women will actually want to post it.
+function drawSocialBanner(ctx, w, h, venueName){
+  const barH = Math.round(h * 0.13);
+  // Gradient fade from transparent to dark at bottom
+  ctx.save();
+  const grad = ctx.createLinearGradient(0, h - barH - Math.round(h*0.06), 0, h);
+  grad.addColorStop(0, 'rgba(8,8,8,0)');
+  grad.addColorStop(0.45, 'rgba(8,8,8,0.70)');
+  grad.addColorStop(1, 'rgba(8,8,8,0.85)');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, h - barH - Math.round(h*0.06), w, barH + Math.round(h*0.06));
+
+  const fontSize = Math.max(12, Math.round(w * 0.024));
+  ctx.font = `600 ${fontSize}px 'Inter', sans-serif`;
+  ctx.fillStyle = 'rgba(242,237,230,0.95)';
+  ctx.textBaseline = 'bottom';
+  ctx.textAlign = 'center';
+
+  const leftPart = venueName ? venueName.toUpperCase() + ' × ATCHÉ VISUALS' : 'ATCHÉ VISUALS';
+  const text = leftPart + '   ·   @atche.visuals   ·   DC';
+  ctx.fillText(text, w/2, h - Math.round(h * 0.04));
+  ctx.restore();
+}
+
+// Route watermark drawing based on the current mode
+function applyCurrentWatermark(ctx, w, h){
+  const venue = getVenueName();
+  if(currentWmMode === 'social'){
+    drawSocialBanner(ctx, w, h, venue);
+  } else if(currentWmMode === 'venue'){
+    drawVenueWatermark(ctx, w, h, venue);
+  } else {
+    drawWatermark(ctx, w, h);
+  }
+}
+
+// ---- SEND SOCIAL VERSION ----
+// Takes the most recently uploaded full-res photo for the active session,
+// applies the social share bottom banner, and downloads it as a JPEG.
+// Fair exchange play: hand it to women who didn't pay in exchange for a post + follow.
+async function sendSocialVersion(){
+  if(!activeSession){ showToast('Open a session first', 'error'); return; }
+  const code = activeSession.code;
+  const { data: files } = await sb.storage.from(BUCKET).list(`${code}/full`, {
+    limit:10, sortBy:{column:'created_at', order:'desc'}
+  });
+  const candidates = (files || []).filter(f => f.name !== '.emptyFolderPlaceholder' && !/\.(mp4|mov|webm)$/i.test(f.name));
+  if(!candidates.length){
+    showToast('Upload a photo first', 'error'); return;
+  }
+
+  const btn = document.getElementById('sendSocialBtn');
+  const origText = btn.innerHTML;
+  btn.innerHTML = 'Generating…';
+  btn.disabled = true;
+
+  try{
+    const fileName = candidates[0].name;
+    const { data: urlData } = sb.storage.from(BUCKET).getPublicUrl(`${code}/full/${fileName}`);
+    const resp = await fetch(urlData.publicUrl);
+    if(!resp.ok) throw new Error('Could not fetch photo');
+    const blob = await resp.blob();
+    const file = new File([blob], fileName, { type: blob.type });
+    const img = await loadImageFromFile(file);
+    const { width, height } = fitDims(img.naturalWidth, img.naturalHeight, 1280);
+    const canvas = document.createElement('canvas');
+    canvas.width = width; canvas.height = height;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(img, 0, 0, width, height);
+    await ensureFonts();
+    // Always use social banner for this action regardless of current mode
+    drawSocialBanner(ctx, width, height, getVenueName());
+    canvas.toBlob(socialBlob => {
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(socialBlob);
+      a.download = `${code}-social-share.jpg`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(a.href);
+      showToast('Social version ready — send it ✓', 'success');
+    }, 'image/jpeg', 0.88);
+  }catch(e){
+    showToast('Error: ' + e.message, 'error');
+  }finally{
+    btn.innerHTML = origText;
+    btn.disabled = false;
+  }
 }
 
 function drawPlayBadge(ctx, w, h){
@@ -627,7 +808,7 @@ function fitDims(w, h, maxDim){
   return { width: w, height: h };
 }
 
-// Watermarked, downsized preview for a photo
+// Watermarked, downsized preview for a photo — uses current watermark mode
 async function makeImagePreview(file, maxDim = 1280){
   const img = await loadImageFromFile(file);
   const { width, height } = fitDims(img.naturalWidth, img.naturalHeight, maxDim);
@@ -636,11 +817,11 @@ async function makeImagePreview(file, maxDim = 1280){
   const ctx = canvas.getContext('2d');
   ctx.drawImage(img, 0, 0, width, height);
   await ensureFonts();
-  drawWatermark(ctx, width, height);
+  applyCurrentWatermark(ctx, width, height);
   return canvasToBlob(canvas, 'image/jpeg', 0.82);
 }
 
-// Watermarked poster frame for a video
+// Watermarked poster frame for a video — uses current watermark mode
 async function makeVideoPreview(file, maxDim = 1280){
   const url = URL.createObjectURL(file);
   const video = document.createElement('video');
@@ -662,7 +843,7 @@ async function makeVideoPreview(file, maxDim = 1280){
   const ctx = canvas.getContext('2d');
   ctx.drawImage(video, 0, 0, width, height);
   await ensureFonts();
-  drawWatermark(ctx, width, height);
+  applyCurrentWatermark(ctx, width, height);
   drawPlayBadge(ctx, width, height);
   URL.revokeObjectURL(url);
   return canvasToBlob(canvas, 'image/jpeg', 0.82);
@@ -1066,11 +1247,19 @@ async function loadSessions(){
       overflowBtn.onclick = (e) => {
         e.stopPropagation();
         const isOpen = overflowMenu.classList.contains('open');
+        // Close any other open menus and remove their z-index boosts
         document.querySelectorAll('.sess-overflow-menu.open').forEach(m => {
           m.classList.remove('open');
           m.previousElementSibling.setAttribute('aria-expanded','false');
+          const row = m.closest('.sess-item');
+          if(row) row.classList.remove('menu-open');
         });
-        if(!isOpen){ overflowMenu.classList.add('open'); overflowBtn.setAttribute('aria-expanded','true'); }
+        if(!isOpen){
+          overflowMenu.classList.add('open');
+          overflowBtn.setAttribute('aria-expanded','true');
+          // Boost this row above siblings so the dropdown clears the card below
+          div.classList.add('menu-open');
+        }
       };
       if(canFeedback) div.querySelector('.sess-ov-feedback').onclick = (e) => { e.stopPropagation(); overflowMenu.classList.remove('open'); sendFeedbackRequest(s); };
       if(s.status === 'closed'){
