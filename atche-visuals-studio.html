@@ -314,6 +314,11 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--gold);outline-offse
 .thumb-lightbox img, .thumb-lightbox video{max-width:100%;max-height:90vh;border-radius:10px;border:1px solid var(--border2);cursor:default}
 .thumb-lightbox-close{position:absolute;top:18px;right:22px;font-size:28px;color:var(--text2);cursor:pointer;line-height:1;transition:var(--t)}
 .thumb-lightbox-close:hover{color:var(--gold)}
+
+/* ---- MULTI-SELECT CHECKBOXES ---- */
+.sess-check{width:18px;height:18px;border-radius:5px;border:1.5px solid var(--border2);background:var(--surface2);cursor:pointer;flex-shrink:0;position:relative;transition:var(--t)}
+.sess-check.checked{border-color:var(--rose);background:rgba(194,105,122,.25)}
+.sess-check.checked::after{content:'\2713';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:11px;color:#E8A0AE;font-weight:700}
 </style>
 </head>
 <body>
@@ -463,6 +468,28 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--gold);outline-offse
       <input type="file" id="fileInput" accept="image/*,video/*" multiple>
       <div class="thumb-grid" id="thumbGrid"></div>
       <div class="upload-status" id="uploadStatus"></div>
+
+      <!-- Private notes (backend only — never shown to client) -->
+      <div id="activeNotesRow" style="margin-top:14px;display:none">
+        <div class="wm-section-label">Private Notes</div>
+        <textarea class="form-input" id="activeNotes" rows="2" placeholder="Notes about this client — never shown to them" style="resize:vertical;font-family:inherit;font-size:13px;line-height:1.5;width:100%" oninput="saveNotes()"></textarea>
+      </div>
+      <!-- AI Edit offer (manual) -->
+      <div id="aiOfferSection" style="margin-top:14px;display:none">
+        <div class="wm-section-label">Offer AI-Enhanced Edit</div>
+        <div class="wm-mode-row" id="aiOfferThemeRow" style="flex-wrap:wrap;gap:6px"></div>
+        <button class="btn-social" id="markAiEditBtn" onclick="markAiEditOwed()" style="margin-top:8px;font-size:10px">✨ Mark AI Edit Owed</button>
+      </div>
+      <!-- SMS Actions -->
+      <div id="smsActionsRow" style="margin-top:14px;display:none">
+        <div class="wm-section-label">Send SMS</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="wm-mode-btn" style="flex:1;min-width:120px" onclick="sendTwilioSMS('ready')">📸 Photos Ready</button>
+          <button class="wm-mode-btn" style="flex:1;min-width:120px" onclick="sendTwilioSMS('reminder')">⏰ Reminder</button>
+          <button class="wm-mode-btn" style="flex:1;min-width:120px" onclick="sendTwilioSMS('feedback')">💬 Feedback Ask</button>
+        </div>
+        <div id="smsStatus" style="font-size:11px;color:var(--text3);margin-top:6px;text-align:center"></div>
+      </div>
       <div class="close-session-row">
         <button class="close-session-btn" onclick="closeSessionConfirm()">Close Session</button>
       </div>
@@ -483,7 +510,7 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--gold);outline-offse
     </div>
 
     <div class="av-footer">
-      <a onclick="window.open('https://atche-visuals.atcheofficial.com/','_blank')">↗ Client Door Preview</a>
+      <a onclick="window.open('https://xvisuals.atchestudio.com/','_blank')">↗ Client Door Preview</a>
       <span style="color:var(--border2)">·</span>
       <a onclick="doSignOut()">Sign Out</a>
     </div>
@@ -555,20 +582,22 @@ function closeModal(){
 }
 
 // Close modal on overlay click + close overflow menus on outside click
+function closeAllOverflowMenus(){
+  document.querySelectorAll('.sess-overflow-menu.open').forEach(m => {
+    m.classList.remove('open');
+    const btn = m.previousElementSibling;
+    if(btn) btn.setAttribute('aria-expanded','false');
+    const row = m.closest('.sess-item');
+    if(row) row.classList.remove('menu-open');
+    m.style.cssText = '';
+  });
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('cmOverlay').addEventListener('click', e => {
     if(e.target === document.getElementById('cmOverlay')){ closeModal(); if(_cmResolve) _cmResolve(null); }
   });
-  document.addEventListener('click', () => {
-    document.querySelectorAll('.sess-overflow-menu.open').forEach(m => {
-      m.classList.remove('open');
-      const btn = m.previousElementSibling;
-      if(btn) btn.setAttribute('aria-expanded','false');
-      // Remove z-index boost on the parent row
-      const row = m.closest('.sess-item');
-      if(row) row.classList.remove('menu-open');
-    });
-  });
+  document.addEventListener('click', () => closeAllOverflowMenus());
 });
 
 let _toastTimer = null;
@@ -635,8 +664,8 @@ function drawWatermark(ctx, w, h, overrideText){
   ctx.save();
   const tileFont = Math.max(18, Math.round(w * 0.034));
   ctx.font = `700 ${tileFont}px 'Playfair Display', serif`;
-  ctx.fillStyle = 'rgba(242,237,230,0.16)';
-  ctx.strokeStyle = 'rgba(8,8,8,0.16)';
+  ctx.fillStyle = 'rgba(242,237,230,0.09)';
+  ctx.strokeStyle = 'rgba(8,8,8,0.06)';
   ctx.lineWidth = Math.max(1, tileFont * 0.04);
   ctx.textBaseline = 'middle';
   ctx.translate(w/2, h/2);
@@ -698,7 +727,7 @@ function drawSocialBanner(ctx, w, h, venueName){
   ctx.textAlign = 'center';
 
   const leftPart = venueName ? venueName.toUpperCase() + ' × ATCHÉ VISUALS' : 'ATCHÉ VISUALS';
-  const text = leftPart + '   ·   @atche.visuals   ·   DC';
+  const text = leftPart + '   ·   @atche.official   ·   DC';
   ctx.fillText(text, w/2, h - Math.round(h * 0.04));
   ctx.restore();
 }
@@ -994,7 +1023,7 @@ function genCode(){
   return c;
 }
 
-const CLIENT_GALLERY_BASE = 'https://atche-visuals.atcheofficial.com/';
+const CLIENT_GALLERY_BASE = 'https://xvisuals.atchestudio.com/';
 
 function clientLink(code){
   return CLIENT_GALLERY_BASE + '?s=' + code;
@@ -1059,6 +1088,7 @@ function openSession(session){
   loadThumbs();
   updatePaymentBanner();
   updateAiEditBanner();
+  showActiveExtras();
 
   // Scroll so the relevant info is actually visible: if this session needs
   // a payment confirmation, jump straight to that banner (and flash it) so
@@ -1500,7 +1530,7 @@ async function notifyClient(){
 
   const link = clientLink(activeSession.code);
   const who = activeSession.label ? activeSession.label + ' ' : '';
-  const msg = `Hey ${who}— your photos & reels from tonight are ready ✨ Pick your favorites and grab them here: ${link}`;
+  const msg = `Hey ${who}— your photos & reels from tonight are ready ✨ Pick your favorites and grab them here: ${link}\n\n⏳ Photos are only available for 48 hours — grab them before they're gone!`;
   document.getElementById('notifyBtn').classList.remove('notify-pulse');
 
   sendClientMessage(activeSession.contact, msg, { emailSubject: 'Your ATCHÉ Visuals photos are ready ✨' });
