@@ -82,7 +82,7 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 
 /* GALLERY */
 .gallery-empty{text-align:center;font-size:12px;color:var(--text3);padding:30px 0;font-style:italic}
-.gallery-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:8px}
+.gallery-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:8px;max-height:60vh;overflow-y:auto;padding-right:4px;scroll-behavior:smooth}
 .gallery-item{position:relative;border-radius:13px;overflow:hidden;aspect-ratio:1;border:2px solid rgba(255,255,255,0.055);cursor:pointer;transition:transform .25s var(--t),border-color .25s var(--t),box-shadow .25s var(--t);background:var(--surface2);animation:item-in .5s var(--spring) both;animation-delay:var(--d,0s)}
 .gallery-item:active{transform:scale(.94)}
 .gallery-item.selected{border-color:var(--gold);box-shadow:0 0 0 1px var(--gold),0 8px 26px -8px rgba(201,168,76,.45);transform:scale(1.02)}
@@ -293,8 +293,8 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
       <div class="landing-section-title">No code yet? Browse what's available while you wait.</div>
       <div class="pkg pkg-static" onclick="openPreview(0)">
         <div class="pkg-thumb"><img src="https://d8j0ntlcm91z4.cloudfront.net/user_38UuuwPAyCC1aFyPsNUyccdEuZD/hf_20260613_005538_be580b13-e2b5-4009-a425-a12c797e7f89_min.webp" alt="Quick Shot" loading="lazy"></div>
-        <div class="pkg-body"><div class="pkg-name">Quick Shot</div><div class="pkg-desc">1 full-resolution photo, your best pick from tonight</div></div>
-        <div class="pkg-price">$20</div>
+        <div class="pkg-body"><div class="pkg-name">Quick Shot</div><div class="pkg-desc">1 photo, your pick — $10</div></div>
+        <div class="pkg-price">$10</div>
       </div>
       <div class="pkg pkg-static pkg-pop" onclick="openPreview(1)">
         <div class="pkg-thumb"><img src="https://d8j0ntlcm91z4.cloudfront.net/user_38UuuwPAyCC1aFyPsNUyccdEuZD/hf_20260613_010304_ca7ed54c-53ee-4a4f-9b64-3e8d76036eff_min.webp" alt="The Bundle" loading="lazy"></div>
@@ -358,10 +358,10 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
       <h2>What do you want to take home?</h2>
       <p class="card-desc">Pick what fits — you can switch anytime before you pay.</p>
       <div class="packages-grid">
-        <div class="pkg" data-price="20" data-name="Quick Shot" data-max="1" onclick="selectPkg(this)">
+        <div class="pkg" data-price="10" data-name="Quick Shot" data-max="1" onclick="selectPkg(this)">
           <div class="pkg-radio"></div>
-          <div class="pkg-body"><div class="pkg-name">Quick Shot</div><div class="pkg-desc">1 photo, full resolution — your best shot from tonight</div></div>
-          <div class="pkg-price">$20</div>
+          <div class="pkg-body"><div class="pkg-name">Quick Shot</div><div class="pkg-desc">1 photo, your pick — $10</div></div>
+          <div class="pkg-price">$10</div>
         </div>
         <div class="pkg active pkg-pop" data-price="30" data-name="The Bundle" data-max="8" onclick="selectPkg(this)">
           <div class="pkg-radio"></div>
@@ -446,6 +446,11 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
       </div>
     </div>
 
+    <div class="card reveal" id="disclaimerCard">
+      <span class="step-tag">Rights & Usage</span>
+      <p style="font-size:11px;color:var(--text3);line-height:1.75">By accessing your gallery and downloading photos, you grant ATCHÉ Visuals a non-exclusive, royalty-free license to use these images for portfolio, promotional, and social media purposes. You retain full ownership of your likeness. If you'd prefer your images not be shared publicly, please let your photographer know — they'll respect that and flag your session accordingly.</p>
+    </div>
+
   </div>
 
   <div class="card recruit reveal">
@@ -496,9 +501,9 @@ let aiEditThemeIdx    = 0;
 let aiEditPollInterval = null;
 
 const PKG_PREVIEWS = [
-  { name:'Quick Shot', desc:'One full-resolution photo, your pick from tonight.',              price:'$20', img:'https://d8j0ntlcm91z4.cloudfront.net/user_38UuuwPAyCC1aFyPsNUyccdEuZD/hf_20260613_005538_be580b13-e2b5-4009-a425-a12c797e7f89.png' },
-  { name:'The Bundle', desc:'Up to 8 edited photos from tonight — your whole night, curated.', price:'$30', img:'https://d8j0ntlcm91z4.cloudfront.net/user_38UuuwPAyCC1aFyPsNUyccdEuZD/hf_20260613_010304_ca7ed54c-53ee-4a4f-9b64-3e8d76036eff.png' },
-  { name:'Full Night', desc:'Every photo + a performance reel — the complete set.',            price:'$60', img:'https://d8j0ntlcm91z4.cloudfront.net/user_38UuuwPAyCC1aFyPsNUyccdEuZD/hf_20260613_010305_5b02bc43-c1f9-46bf-8d31-ca3451e99b7a.png' }
+  { name:'Quick Shot', desc:'1 photo, your pick — $10',              price:'$10', img:'https://d8j0ntlcm91z4.cloudfront.net/user_38UuuwPAyCC1aFyPsNUyccdEuZD/hf_20260613_005538_be580b13-e2b5-4009-a425-a12c797e7f89.png' },
+  { name:'The Bundle', desc:'Up to 8 photos, curated — $30', price:'$30', img:'https://d8j0ntlcm91z4.cloudfront.net/user_38UuuwPAyCC1aFyPsNUyccdEuZD/hf_20260613_010304_ca7ed54c-53ee-4a4f-9b64-3e8d76036eff.png' },
+  { name:'Full Night', desc:'Everything — all photos + reel — $60', price:'$60', img:'https://d8j0ntlcm91z4.cloudfront.net/user_38UuuwPAyCC1aFyPsNUyccdEuZD/hf_20260613_010305_5b02bc43-c1f9-46bf-8d31-ca3451e99b7a.png' }
 ];
 
 function initBgFx(){
@@ -611,11 +616,25 @@ function updatePayment(){
 async function requestPaymentConfirmation(){
   if(!session)return;
   const btn=document.getElementById('paidBtn'); btn.disabled=true; btn.textContent='Letting them know…';
-  const rpcParams={p_code:session.code,p_package_name:currentName,p_package_price:currentPrice};
-  if(aiEditEnabled){ const theme=AI_EDIT_THEMES[aiEditThemeIdx]; const photoSelect=document.getElementById('aiEditPhoto'); rpcParams.p_ai_edit_theme=theme.name; rpcParams.p_ai_edit_photo=photoSelect?photoSelect.value:null; rpcParams.p_ai_edit_price=theme.price; }
-  const{error}=await sb.rpc('request_payment_confirmation',rpcParams);
-  if(error){ btn.disabled=false; btn.textContent="I've sent payment"; const errEl=document.getElementById('confirmErr'); if(errEl){errEl.textContent="Couldn't send — try again or flag down your photographer.";errEl.style.display='block';} return; }
   const errEl=document.getElementById('confirmErr'); if(errEl)errEl.style.display='none';
+
+  const updateData={payment_requested:true,package_name:currentName,package_price:currentPrice};
+  if(aiEditEnabled){ const theme=AI_EDIT_THEMES[aiEditThemeIdx]; const photoSelect=document.getElementById('aiEditPhoto'); updateData.ai_edit_requested=true; updateData.ai_edit_theme=theme.name; updateData.ai_edit_photo=photoSelect?photoSelect.value:null; updateData.ai_edit_price=theme.price; }
+
+  // Try RPC first, fall back to direct session update
+  let error=null;
+  try{
+    const rpcParams={p_code:session.code,p_package_name:currentName,p_package_price:currentPrice};
+    if(aiEditEnabled){ const theme=AI_EDIT_THEMES[aiEditThemeIdx]; const photoSelect=document.getElementById('aiEditPhoto'); rpcParams.p_ai_edit_theme=theme.name; rpcParams.p_ai_edit_photo=photoSelect?photoSelect.value:null; rpcParams.p_ai_edit_price=theme.price; }
+    const rpcResult=await sb.rpc('request_payment_confirmation',rpcParams);
+    if(rpcResult.error){ throw rpcResult.error; }
+  }catch(rpcErr){
+    // RPC failed — fall back to direct session update so button always works
+    const{error:updateErr}=await sb.from('visuals_sessions').update(updateData).eq('code',session.code);
+    error=updateErr;
+  }
+
+  if(error){ btn.disabled=false; btn.textContent="I've sent payment"; if(errEl){errEl.textContent="Couldn't confirm — let your photographer know you paid. They can unlock your download from their studio panel.";errEl.style.display='block';} return; }
   btn.textContent='Waiting for confirmation…';
   document.getElementById('payPending').style.display='flex';
   document.getElementById('payHelp').style.display='none';

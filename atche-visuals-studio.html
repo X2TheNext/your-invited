@@ -458,6 +458,7 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--gold);outline-offse
           <input class="wm-venue-input" id="wmVenueCustom" type="text" placeholder="Type venue name…" style="display:none" oninput="currentVenueName=this.value.trim()">
         </div>
         <button class="btn-social" id="sendSocialBtn" onclick="sendSocialVersion()" title="Generate a clean editorial version of the latest photo — for women who didn't pay, in exchange for a post + follow">↗ Send Social Version</button>
+        <button class="btn-social" id="sendCleanBtn" onclick="sendCleanVersion()" style="margin-top:6px;border-color:rgba(107,158,122,0.35);color:var(--sage)" title="Download the clean, unwatermarked full-resolution photo directly — remove watermark manually for any client">✓ Send Clean Version (No Watermark)</button>
       </div>
 
       <div class="drop-zone" id="dropZone" onclick="document.getElementById('fileInput').click()">
@@ -794,6 +795,49 @@ async function sendSocialVersion(){
     showToast('Error: ' + e.message, 'error');
   }finally{
     btn.innerHTML = origText;
+    btn.disabled = false;
+  }
+}
+
+// ---- SEND CLEAN VERSION (NO WATERMARK) ----
+// Downloads the most recently uploaded full-resolution file directly from
+// storage — completely clean, no watermark of any kind. This is the manual
+// "remove watermark" path for staff: hand the client the untouched original
+// without going through the gallery purchase flow.
+async function sendCleanVersion(){
+  if(!activeSession){ showToast('Open a session first', 'error'); return; }
+  const code = activeSession.code;
+  const { data: files } = await sb.storage.from(BUCKET).list(`${code}/full`, {
+    limit:10, sortBy:{column:'created_at', order:'desc'}
+  });
+  const candidates = (files || []).filter(f => f.name !== '.emptyFolderPlaceholder');
+  if(!candidates.length){
+    showToast('Upload a photo first', 'error'); return;
+  }
+
+  const btn = document.getElementById('sendCleanBtn');
+  const origText = btn.textContent;
+  btn.textContent = 'Downloading…';
+  btn.disabled = true;
+
+  try{
+    const fileName = candidates[0].name;
+    const { data: urlData } = sb.storage.from(BUCKET).getPublicUrl(`${code}/full/${fileName}`);
+    const resp = await fetch(urlData.publicUrl);
+    if(!resp.ok) throw new Error('Could not fetch file');
+    const blob = await resp.blob();
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = fileName;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(a.href);
+    showToast('Clean version downloaded — no watermark', 'success');
+  }catch(e){
+    showToast('Error: ' + e.message, 'error');
+  }finally{
+    btn.textContent = origText;
     btn.disabled = false;
   }
 }
@@ -1681,6 +1725,124 @@ function copyLink(){
   const orig = btn.textContent;
   btn.textContent = 'Copied ✓';
   setTimeout(()=>btn.textContent=orig, 1500);
+}
+
+// ---- PRIVATE NOTES (BACKEND-ONLY LABEL) ----
+// Staff can tag clients with physical descriptions ("white sparkly dress")
+// that appear only on the studio panel — never shown to the client.
+function saveNotes(){
+  if(!activeSession) return;
+  const val = document.getElementById('activeNotes').value;
+  sb.from('visuals_sessions').update({notes: val}).eq('id', activeSession.id);
+}
+
+// ---- SHOW/HIDE ACTIVE SESSION EXTRAS ----
+// Unhides the private notes, AI offer, and SMS sections when a session is open.
+function showActiveExtras(){
+  const ns = document.getElementById('activeNotesRow');
+  if(ns){ ns.style.display = 'block'; }
+  if(activeSession && activeSession.notes){
+    document.getElementById('activeNotes').value = activeSession.notes;
+  }
+  const ai = document.getElementById('aiOfferSection');
+  if(ai) ai.style.display = 'block';
+  const sms = document.getElementById('smsActionsRow');
+  if(sms) sms.style.display = 'block';
+}
+
+// ---- AI EDIT OFFER (MANUAL) ----
+async function markAiEditOwed(){
+  if(!activeSession) return;
+  const result = await showModal({
+    title: 'Offer AI Edit',
+    body: 'Mark this client as owed an AI-Enhanced Edit? They\'ll see "coming soon" in their gallery.',
+    confirm: 'Mark Owed',
+    cancel: 'Cancel',
+    fields: [
+      { key: 'theme', label: 'Theme', placeholder: 'e.g. Private Jet Glam, Penthouse Night, Red Carpet', type: 'text' },
+      { key: 'photo', label: 'Photo to use', placeholder: 'e.g. Photo 1, Reel 2', type: 'text' }
+    ]
+  });
+  if(!result) return;
+  const { error } = await sb.from('visuals_sessions').update({
+    ai_edit_requested: true,
+    ai_edit_theme: result.theme,
+    ai_edit_photo: result.photo
+  }).eq('id', activeSession.id);
+  if(error){ showToast('Error: ' + error.message, 'error'); return; }
+  activeSession.ai_edit_requested = true;
+  activeSession.ai_edit_theme = result.theme;
+  activeSession.ai_edit_photo = result.photo;
+  updateAiEditBanner();
+  showToast('AI Edit marked as owed ✓', 'success');
+}
+
+// ---- SEND TWILIO SMS ----
+// Calls the Supabase Edge Function that relays the message through Twilio.
+// Falls back to the client's native SMS: handler if the Edge Function is
+// unavailable, and copies the link to clipboard as a final fallback.
+async function sendTwilioSMS(type){
+  if(!activeSession) return;
+  const code = activeSession.code;
+  const link = clientLink(code);
+  const label = activeSession.label || '';
+
+  const messages = {
+    ready: `Hey ${label}— your photos & reels from tonight are ready! Pick your favorites here: ${link}`,
+    reminder: `Hey ${label}— just a reminder that your ATCHÉ Visuals gallery will close soon. Grab your favorites here: ${link}`,
+    feedback: `Hey ${label}— thanks for being part of ATCHÉ Visuals tonight! Mind giving quick feedback? It helps us grow. ${link}`
+  };
+  const msg = messages[type] || messages.ready;
+  const statusEl = document.getElementById('smsStatus');
+  if(statusEl) statusEl.textContent = 'Sending…';
+
+  const contact = activeSession.contact || '';
+  const digits = contact.replace(/[^\d+]/g, '').replace(/[^\d]/g, '');
+  const isPhone = digits.length >= 7;
+  const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contact);
+  const isIG = /^@/.test(contact.trim());
+  const isSocial = !isPhone && !isEmail;
+
+  if(!contact){
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      await navigator.clipboard.writeText(msg);
+      showToast('No contact on file — link copied to clipboard. Paste into IG DM or text.', 'success');
+    } else {
+      showToast('No contact on file — copy the link manually', 'error');
+    }
+    if(statusEl) statusEl.textContent = '';
+    return;
+  }
+
+  if(isPhone){
+    try{
+      // Try Supabase Edge Function for Twilio delivery
+      const { error } = await sb.functions.invoke('send-sms', {
+        body: { to: digits, message: msg }
+      });
+      if(error) throw error;
+      if(statusEl) statusEl.textContent = 'SMS sent ✓';
+      showToast('SMS sent via Twilio ✓', 'success');
+    }catch(e){
+      // Fallback: native SMS handler
+      const isiOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+      const sep = isiOS ? '&' : '?';
+      window.location.href = `sms:${digits}${sep}body=${encodeURIComponent(msg)}`;
+      if(statusEl) statusEl.textContent = 'Opened messages app';
+    }
+  } else if(isEmail){
+    window.location.href = `mailto:${contact}?subject=${encodeURIComponent('Your ATCHÉ Visuals photos')}&body=${encodeURIComponent(msg)}`;
+    if(statusEl) statusEl.textContent = 'Opened email';
+  } else {
+    // IG handle or social — copy to clipboard
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      await navigator.clipboard.writeText(msg);
+      showToast(`"${contact}" doesn't look like a phone number — link copied to clipboard. Send via Instagram DM.`, 'success');
+    } else {
+      showToast('Link ready — send manually', 'error');
+    }
+    if(statusEl) statusEl.textContent = 'Copied to clipboard';
+  }
 }
 
 boot();
