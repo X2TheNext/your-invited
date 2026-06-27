@@ -618,23 +618,48 @@ async function requestPaymentConfirmation(){
   const btn=document.getElementById('paidBtn'); btn.disabled=true; btn.textContent='Letting them know…';
   const errEl=document.getElementById('confirmErr'); if(errEl)errEl.style.display='none';
 
-  const updateData={payment_requested:true,package_name:currentName,package_price:currentPrice};
-  if(aiEditEnabled){ const theme=AI_EDIT_THEMES[aiEditThemeIdx]; const photoSelect=document.getElementById('aiEditPhoto'); updateData.ai_edit_requested=true; updateData.ai_edit_theme=theme.name; updateData.ai_edit_photo=photoSelect?photoSelect.value:null; updateData.ai_edit_price=theme.price; }
-
-  // Try RPC first, fall back to direct session update
-  let error=null;
-  try{
-    const rpcParams={p_code:session.code,p_package_name:currentName,p_package_price:currentPrice};
-    if(aiEditEnabled){ const theme=AI_EDIT_THEMES[aiEditThemeIdx]; const photoSelect=document.getElementById('aiEditPhoto'); rpcParams.p_ai_edit_theme=theme.name; rpcParams.p_ai_edit_photo=photoSelect?photoSelect.value:null; rpcParams.p_ai_edit_price=theme.price; }
-    const rpcResult=await sb.rpc('request_payment_confirmation',rpcParams);
-    if(rpcResult.error){ throw rpcResult.error; }
-  }catch(rpcErr){
-    // RPC failed — fall back to direct session update so button always works
-    const{error:updateErr}=await sb.from('visuals_sessions').update(updateData).eq('code',session.code);
-    error=updateErr;
+  // Always include all params the RPC expects (defaults to null when AI edit not enabled)
+  const rpcParams={
+    p_code:session.code,
+    p_package_name:currentName,
+    p_package_price:currentPrice,
+    p_ai_edit_theme:null,
+    p_ai_edit_photo:null,
+    p_ai_edit_price:null
+  };
+  if(aiEditEnabled){
+    const theme=AI_EDIT_THEMES[aiEditThemeIdx];
+    const photoSelect=document.getElementById('aiEditPhoto');
+    rpcParams.p_ai_edit_theme=theme.name;
+    rpcParams.p_ai_edit_photo=photoSelect?photoSelect.value:null;
+    rpcParams.p_ai_edit_price=theme.price;
   }
 
-  if(error){ btn.disabled=false; btn.textContent="I've sent payment"; if(errEl){errEl.textContent="Couldn't confirm — let your photographer know you paid. They can unlock your download from their studio panel.";errEl.style.display='block';} return; }
+  // Try RPC — this is the only path that works for non-staff (security definer bypasses RLS).
+  // Direct update fallback was removed because anon clients have no UPDATE permission
+  // on visuals_sessions (the anon_mark_paid policy was intentionally dropped).
+  let error=null;
+  try{
+    const rpcResult=await sb.rpc('request_payment_confirmation',rpcParams);
+    if(rpcResult.error){ error=rpcResult.error; }
+  }catch(rpcErr){
+    error=rpcErr;
+  }
+
+  if(error){
+    btn.disabled=false; btn.textContent="I've sent payment";
+    const msg=error?.message||'';
+    console.error('ATCHÉ Visuals RPC error:',msg,error);
+    // Give a clearer message depending on the actual error
+    if(msg.includes('function')&&msg.includes('not found')){
+      if(errEl){errEl.textContent="Payment system unavailable — ask your photographer to mark you paid from their studio panel. (RPC not deployed)";errEl.style.display='block';}
+    }else if(msg.includes('permission')||msg.includes('policy')){
+      if(errEl){errEl.textContent="Couldn't confirm — let your photographer know you paid. They can unlock your download from their studio panel.";errEl.style.display='block';}
+    }else{
+      if(errEl){errEl.textContent="Couldn't confirm — let your photographer know you paid. They can unlock your download from their studio panel.";errEl.style.display='block';}
+    }
+    return;
+  }
   btn.textContent='Waiting for confirmation…';
   document.getElementById('payPending').style.display='flex';
   document.getElementById('payHelp').style.display='none';
